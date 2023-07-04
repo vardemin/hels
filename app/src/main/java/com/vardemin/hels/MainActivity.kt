@@ -10,14 +10,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.vardemin.hels.app.R
 import com.vardemin.hels.ui.theme.HttpServerTheme
-import com.vardemin.httpserver.R
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.cio.*
-import io.ktor.server.engine.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.CacheControl
+import io.ktor.http.ContentType
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
+import io.ktor.server.cio.CIO
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.response.cacheControl
+import io.ktor.server.response.respondBytes
+import io.ktor.server.response.respondTextWriter
+import io.ktor.server.routing.get
+import io.ktor.server.routing.routing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.ReceiveChannel
@@ -53,15 +58,15 @@ class MainActivity : ComponentActivity() {
         embeddedServer(CIO, port = 1515) {
             val channel = produce { // this: ProducerScope<SseEvent> ->
                 var n = 0
-                while ( true ) {
-                    send(SseEvent( "demo $n " ))
-                    delay( 1000 )
+                while (true) {
+                    send(SseEvent("demo $n "))
+                    delay(1000)
                     n++
                 }
             }.broadcast()
             routing {
                 get("/") {
-                    call.respondBytes(contentType = ContentType. Text. Html) {
+                    call.respondBytes(contentType = ContentType.Text.Html) {
                         this@MainActivity.resources.openRawResource(R.raw.index).readBytes()
                     }
                 }

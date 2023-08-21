@@ -1,6 +1,8 @@
 package com.vardemin.hels.utils
 
 import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 class CircularArray<T> : Iterable<T>, Cloneable {
 
@@ -28,6 +30,8 @@ class CircularArray<T> : Iterable<T>, Cloneable {
     private val head: Int
         get() = if (_size == arr.size) (tail + 1) % _size else 0
 
+    private val lock = ReentrantLock()
+
     /**
      * Number of elements currently stored in the array.
      */
@@ -38,21 +42,26 @@ class CircularArray<T> : Iterable<T>, Cloneable {
      * Add an element to the array.
      */
     fun add(item: T) {
-        tail = (tail + 1) % arr.size
-        arr[tail] = item
-        if (_size < arr.size) _size++
+        lock.withLock {
+            tail = (tail + 1) % arr.size
+            arr[tail] = item
+            if (_size < arr.size) _size++
+        }
     }
 
     /**
      * Get an element from the array.
      */
     @Suppress("UNCHECKED_CAST")
-    operator fun get(index: Int): T =
-        when {
-            _size == 0 || index > _size || index < 0 -> throw IndexOutOfBoundsException("$index")
-            _size == arr.size -> arr[(head + index) % arr.size]
-            else -> arr[index]
-        } as T
+    operator fun get(index: Int): T? {
+        return lock.withLock {
+            when {
+                _size == 0 || index > _size || index < 0 -> throw IndexOutOfBoundsException("$index")
+                _size == arr.size -> arr[(head + index) % arr.size]
+                else -> arr[index]
+            } as? T
+        }
+    }
 
     /**
      * This array as a list.
@@ -67,6 +76,7 @@ class CircularArray<T> : Iterable<T>, Cloneable {
         override fun hasNext(): Boolean = index.get() < size
 
         override fun next(): T = get(index.getAndIncrement())
+            ?: throw NoSuchElementException("No such element in circular array")
     }
 
 }

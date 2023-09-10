@@ -6,7 +6,7 @@ import com.vardemin.hels.model.LogLevel
 import kotlinx.datetime.LocalDateTime
 import java.util.Date
 
-internal class LoggerImpl(private val dataSource: LogItemsDataSource) : HelsLogger {
+internal class LoggerImpl(private val dataSource: LogItemsDataSource) : HLogger {
     private val globalProperties = mutableMapOf<String, String>()
 
     override fun d(tag: String, message: String, properties: Map<String, String>) {

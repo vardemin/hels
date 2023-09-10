@@ -1,8 +1,9 @@
 package com.vardemin.hels
 
-import com.vardemin.hels.log.HelsLogger
-import com.vardemin.hels.server.HttpServer
+import com.vardemin.hels.log.HLogger
+import com.vardemin.hels.server.HServer
 
-internal var server: HttpServer? = null
-internal var logger: HelsLogger? = null
+internal var server: HServer? = null
+internal var logger: HLogger? = null
 val HelsLog get() = logger!!
+val HelServer get() = server!!

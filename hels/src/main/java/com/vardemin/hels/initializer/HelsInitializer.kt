@@ -5,7 +5,7 @@ import com.vardemin.hels.data.LogItemsDataSource
 import com.vardemin.hels.log.LoggerImpl
 import com.vardemin.hels.logger
 import com.vardemin.hels.server
-import com.vardemin.hels.server.HttpServer
+import com.vardemin.hels.server.ServerImpl
 import com.vardemin.hels.server.ServerConfig
 import kotlinx.serialization.json.Json
 
@@ -18,9 +18,9 @@ class HelsInitializer {
             useAlternativeNames = true
         }
         val dataSource = LogItemsDataSource()
-        server = HttpServer(serverConfig, json, dataSource).also {
+        logger = LoggerImpl(dataSource)
+        server = ServerImpl(serverConfig, json, dataSource).also {
             it.start()
         }
-        logger = LoggerImpl(dataSource)
     }
 }

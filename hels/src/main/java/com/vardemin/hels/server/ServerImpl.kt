@@ -20,11 +20,11 @@ import io.ktor.websocket.Frame
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-internal class HttpServer(
+internal class ServerImpl(
     config: ServerConfig,
     json: Json,
     logItemsDataSource: LogItemsDataSource
-) {
+): HServer {
     private val server by lazy {
         embeddedServer(CIO, port = config.port) {
             install(WebSockets)
@@ -64,11 +64,11 @@ internal class HttpServer(
         }
     }
 
-    fun start() {
+    override fun start() {
         server.start(wait = true)
     }
 
-    fun stop() {
+    override fun stop() {
         server.stop(GRACE_PERIOD_MILLIS, TIMEOUT_MILLIS)
     }
 

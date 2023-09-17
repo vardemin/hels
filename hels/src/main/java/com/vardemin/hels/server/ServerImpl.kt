@@ -15,10 +15,13 @@ import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.pingPeriod
+import io.ktor.server.websocket.timeout
 import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.Duration
 
 internal class ServerImpl(
     config: ServerConfig,
@@ -65,7 +68,7 @@ internal class ServerImpl(
     }
 
     override fun start() {
-        server.start(wait = true)
+        server.start(wait = false)
     }
 
     override fun stop() {

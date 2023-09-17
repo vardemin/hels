@@ -9,7 +9,7 @@ import com.vardemin.hels.server.ServerImpl
 import com.vardemin.hels.server.ServerConfig
 import kotlinx.serialization.json.Json
 
-class HelsInitializer {
+object HelsInitializer {
     operator fun invoke(context: Context) {
         val serverConfig = ServerConfig(context)
         val json = Json {

@@ -29,6 +29,6 @@ internal class LoggerImpl(private val dataSource: LogItemsDataSource) : HLogger 
 
     private fun getLocalDateTime(): LocalDateTime {
         val date = Date()
-        return LocalDateTime(date.year, date.month, date.day, date.hours, date.minutes, date.seconds)
+        return LocalDateTime(date.year, date.month, date.date, date.hours, date.minutes, date.seconds)
     }
 }

@@ -1,8 +1,8 @@
 package com.vardemin.hels.log
 
 import com.vardemin.hels.data.LogItemsDataSource
-import com.vardemin.hels.model.LogItem
-import com.vardemin.hels.model.LogLevel
+import com.vardemin.hels.model.log.LogItem
+import com.vardemin.hels.model.log.LogLevel
 import kotlinx.datetime.LocalDateTime
 import java.util.Date
 
@@ -22,7 +22,7 @@ internal class LoggerImpl(private val dataSource: LogItemsDataSource) : HLogger 
     }
 
     private fun pushLog(level: LogLevel, title: String, message: String, props: Map<String, String>) {
-        dataSource.pushLog(
+        dataSource.tryEmit(
             LogItem(title, message, getLocalDateTime(), level, globalProperties + props)
         )
     }

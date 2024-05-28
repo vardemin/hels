@@ -1,4 +1,4 @@
-package com.vardemin.hels.model
+package com.vardemin.hels.model.log
 
 enum class LogLevel {
     Verbose,

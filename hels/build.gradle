@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace 'com.vardemin.hels'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         minSdk 21
-        targetSdk 33
+        targetSdk 34
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -43,10 +43,14 @@ dependencies {
     implementation "io.ktor:ktor-server-content-negotiation:$ktorVersion"
     implementation "io.ktor:ktor-serialization-kotlinx-json:$ktorVersion"
     implementation "io.ktor:ktor-server-status-pages:$ktorVersion"
+    implementation "io.ktor:ktor-server-cors:$ktorVersion"
 
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
+
+    implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
+    implementation("com.squareup.okhttp3:okhttp")
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

@@ -1,33 +1,32 @@
 package com.vardemin.hels.server
 
-import com.vardemin.hels.data.LogItemsDataSource
-import io.ktor.http.ContentType
+import android.util.Log
+import com.vardemin.hels.requests
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
 import io.ktor.server.engine.embeddedServer
+import io.ktor.server.http.content.staticFiles
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
-import io.ktor.server.response.respondBytes
 import io.ktor.server.routing.get
+import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
-import io.ktor.server.websocket.pingPeriod
-import io.ktor.server.websocket.timeout
 import io.ktor.server.websocket.webSocket
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
-import kotlinx.serialization.encodeToString
+import io.ktor.websocket.close
 import kotlinx.serialization.json.Json
-import java.time.Duration
 
 internal class ServerImpl(
     config: ServerConfig,
-    json: Json,
-    logItemsDataSource: LogItemsDataSource
-): HServer {
+    json: Json
+) : HServer {
     private val server by lazy {
         embeddedServer(CIO, port = config.port) {
             install(WebSockets)
@@ -40,27 +39,34 @@ internal class ServerImpl(
                     call.respond(HttpStatusCode.InternalServerError, cause.localizedMessage)
                 }
             }
+            install(CORS) {
+                anyHost()
+            }
+
             routing {
-                get("/") {
-                    call.respondBytes(contentType = ContentType.Text.Html) {
-                        config.indexBytes
+                staticFiles("/", config.frontDirectory) {
+                    extensions("html", "htm")
+                }
+                route("/api/v1") {
+                    get("/requests/{id}") {
+                        val id = call.parameters["id"] ?: ""
+                        requests.replayCache.asReversed().find { it.id == id }?.let {
+                            call.respond(it)
+                        } ?: call.respond(HttpStatusCode.NotFound)
                     }
                 }
-                get("/bulma.css") {
-                    call.respondBytes(contentType = ContentType.Text.CSS) {
-                        config.cssBytes
-                    }
-                }
-                webSocket("/logs") {
-                    val currentLogs = logItemsDataSource.logItemsFlow.replayCache
-
-                    // Send initial paginated logs to the client
-                    val initialLogsJson = json.encodeToString(currentLogs)
-                    send(Frame.Text(initialLogsJson))
-
-                    logItemsDataSource.logItemsFlow.collect {
-                        val logJson = json.encodeToString(it)
-                        send(Frame.Text(logJson))
+                config.dataSources.forEach { dataSource ->
+                    webSocket(dataSource.path) {
+                        try {
+                            dataSource.collect {
+                                val jsonEncoded = it.toJson(json)
+                                send(Frame.Text(jsonEncoded))
+                            }
+                        } catch (e: Exception) {
+                            val errorMessage = e.message ?: "Error"
+                            close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
+                            Log.d("HELS", errorMessage)
+                        }
                     }
                 }
             }
@@ -68,7 +74,7 @@ internal class ServerImpl(
     }
 
     override fun start() {
-        server.start(wait = false)
+        server.start(wait = true)
     }
 
     override fun stop() {

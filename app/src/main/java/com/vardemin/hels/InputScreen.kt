@@ -12,8 +12,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.vardemin.hels.ui.NetworkClient
+import kotlin.random.Random
+import kotlin.random.nextInt
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputScreen() {
     var titleState by remember { mutableStateOf("Title") }
@@ -39,17 +42,36 @@ fun InputScreen() {
         )
         Button(
             onClick = {
-                HelsLog.d(titleState, bodyState)
+                HelsLog.d(titleState, bodyState, mapOf(
+                    "Version" to "23.4.1",
+                    "Code" to Random.nextInt(200..1000).toString()
+                ))
             }
         ) {
             Text(text = "Log debug event")
         }
         Button(
             onClick = {
-                HelsLog.i(titleState, bodyState)
+                HelsLog.i(titleState, bodyState, mapOf(
+                    "Version" to "23.4.1",
+                    "Code" to Random.nextInt(200..1000).toString()
+                ))
             }
         ) {
             Text(text = "Log info event")
         }
+        Button(
+            onClick = {
+                NetworkClient.makeCall()
+            }
+        ) {
+            Text(text = "Make API request")
+        }
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun InputScreenPreview() {
+    InputScreen()
 }

@@ -39,8 +39,6 @@ object HelsInitializer {
         val dataSources = listOf(loggerDataSource, requests) + additionalDataSources
         val serverConfig = ServerConfig(port, actualFrontDirectory, dataSources)
         server = ServerImpl(serverConfig, json)
-        scope.launch {
-            HelServer.start()
-        }
+        HelServer.start()
     }
 }

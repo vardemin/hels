@@ -21,14 +21,20 @@ import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.Frame
 import io.ktor.websocket.close
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.json.Json
+import kotlin.coroutines.CoroutineContext
 
 internal class ServerImpl(
     config: ServerConfig,
     json: Json
-) : HServer {
+) : HServer, CoroutineScope {
+
+    override val coroutineContext: CoroutineContext = Dispatchers.IO
+
     private val server by lazy {
-        embeddedServer(CIO, port = config.port) {
+        embeddedServer(CIO, port = config.port, host = "0.0.0.0") {
             install(WebSockets)
             install(ContentNegotiation) {
                 json(json)
@@ -45,6 +51,7 @@ internal class ServerImpl(
 
             routing {
                 staticFiles("/", config.frontDirectory) {
+                    default("index.html")
                     extensions("html", "htm")
                 }
                 route("/api/v1") {
@@ -74,7 +81,7 @@ internal class ServerImpl(
     }
 
     override fun start() {
-        server.start(wait = true)
+        server.start(wait = false)
     }
 
     override fun stop() {

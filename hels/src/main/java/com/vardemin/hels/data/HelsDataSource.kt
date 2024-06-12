@@ -16,6 +16,14 @@ open class HelsDataSource<Item : HelsItem> private constructor(
         onBufferOverflow: BufferOverflow = BufferOverflow.SUSPEND
     ) : this(path, MutableSharedFlow(replay, extraBufferCapacity, onBufferOverflow))
 
+    open suspend fun loadInitialData() {
+        // No op
+    }
+
+    open suspend fun persistData() {
+        // No op
+    }
+
     companion object {
         internal const val HELS_DEFAULT_REPLAY_CACHE = 256
         internal const val HELS_DEFAULT_BUFFER_CAPACITY = 1024

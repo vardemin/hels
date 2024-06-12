@@ -7,6 +7,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
+import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
@@ -23,15 +24,37 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.channels.ticker
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import kotlin.coroutines.CoroutineContext
 
 internal class ServerImpl(
-    config: ServerConfig,
+    private val config: ServerConfig,
     json: Json
 ) : HServer, CoroutineScope {
 
     override val coroutineContext: CoroutineContext = Dispatchers.IO
+
+    private var replicaJob: Job? = null
+
+    init {
+        config.dataSources.forEach {
+            launch {
+                it.loadInitialData()
+            }
+        }
+        replicaJob = launch {
+            ticker(REPLICA_JOB_INTERVAL, REPLICA_JOB_INTERVAL, coroutineContext).consumeEach {
+                config.dataSources.forEach {
+                    it.persistData()
+                }
+            }
+        }
+    }
 
     private val server by lazy {
         embeddedServer(CIO, port = config.port, host = "0.0.0.0") {
@@ -72,6 +95,7 @@ internal class ServerImpl(
                         } catch (e: Exception) {
                             val errorMessage = e.message ?: "Error"
                             close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
+                            dataSource.persistData()
                             Log.d("HELS", errorMessage)
                         }
                     }
@@ -85,11 +109,19 @@ internal class ServerImpl(
     }
 
     override fun stop() {
+        replicaJob?.cancel()
+        replicaJob = null
+        config.dataSources.forEach {
+            launch {
+                it.persistData()
+            }
+        }
         server.stop(GRACE_PERIOD_MILLIS, TIMEOUT_MILLIS)
     }
 
     private companion object {
         private const val GRACE_PERIOD_MILLIS = 1000L
         private const val TIMEOUT_MILLIS = 2000L
+        private const val REPLICA_JOB_INTERVAL = 600000L
     }
 }

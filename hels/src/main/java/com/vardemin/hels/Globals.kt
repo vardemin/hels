@@ -6,8 +6,8 @@ import com.vardemin.hels.server.HServer
 
 internal var server: HServer? = null
 internal var logger: HLogger? = null
-internal val requests by lazy {
-    RequestsDataSource()
-}
+internal var requestsDataSource: RequestsDataSource? = null
+internal val requests get() = requestsDataSource!!
+
 val HelsLog get() = logger!!
 val HelServer get() = server!!

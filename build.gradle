@@ -17,4 +17,5 @@ ext {
     coroutinesVersion = '1.8.0'
     serializationVersion = '1.6.3'
     okHttpVersion = '4.12.0'
+    dataStoreVersion = '1.1.1'
 }

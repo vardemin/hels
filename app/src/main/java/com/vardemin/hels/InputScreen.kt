@@ -67,6 +67,20 @@ fun InputScreen() {
         ) {
             Text(text = "Make API request")
         }
+        Button(
+            onClick = {
+                HelServer.stop()
+            }
+        ) {
+            Text(text = "Stop")
+        }
+        Button(
+            onClick = {
+                HelServer.start()
+            }
+        ) {
+            Text(text = "Start")
+        }
     }
 }
 

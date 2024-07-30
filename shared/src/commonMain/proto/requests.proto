@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package com.vardemin.hels.proto;
+
+import "google/protobuf/timestamp.proto";
+
+message RequestEntries {
+  repeated RequestEntry items = 1;
+}
+
+message RequestEntry {
+  string id = 1;
+  RequestParamsEntry request = 2;
+  optional ResponseParamsEntry response = 3;
+  optional ErrorEntry error = 4;
+}
+
+message RequestParamsEntry {
+  string method = 1;
+  string url = 2;
+  map<string, HeaderValues> headers = 3;
+  optional string payload = 4;
+  int64 millis = 5;
+}
+
+message HeaderValues {
+  repeated string value = 1;
+}
+
+message ResponseParamsEntry {
+  int32 code = 1;
+  map<string, HeaderValues> headers = 2;
+  optional string payload = 3;
+  int64 millis = 4;
+}
+
+message ErrorEntry {
+  string message = 1;
+  int64 millis = 2;
+}
+
+

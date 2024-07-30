@@ -1,0 +1,23 @@
+PODS:
+  - shared (1.0):
+    - SSZipArchive (= 2.5.0)
+  - SSZipArchive (2.5.0)
+
+DEPENDENCIES:
+  - shared (from `../shared`)
+
+SPEC REPOS:
+  trunk:
+    - SSZipArchive
+
+EXTERNAL SOURCES:
+  shared:
+    :path: "../shared"
+
+SPEC CHECKSUMS:
+  shared: 0b12e7abf80b644295d272315ae42dfe27e53c8e
+  SSZipArchive: 47b4ac3dbcb37e319bde9dd3a706f627de1d77d3
+
+PODFILE CHECKSUM: 78d6cc1b71b232202c48a29d4e6c34972c534c73
+
+COCOAPODS: 1.15.2

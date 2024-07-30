@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package com.vardemin.hels.proto;
+
+import "google/protobuf/timestamp.proto";
+
+message LogEntries {
+  repeated LogEntry items = 1;
+}
+
+message LogEntry {
+  string title = 1;
+  string message = 2;
+  int64 millis = 3;
+  LogEntryLevel level = 4;
+  map<string, string> properties = 5;
+}
+
+enum LogEntryLevel {
+  Verbose = 0;
+  Debug = 1;
+  Info = 2;
+  Warning = 3;
+  Error = 4;
+  Fatal = 5;
+  Silent = 6;
+}

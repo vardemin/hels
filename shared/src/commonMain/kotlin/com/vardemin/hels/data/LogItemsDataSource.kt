@@ -2,11 +2,12 @@ package com.vardemin.hels.data
 
 import androidx.datastore.core.DataStore
 import com.vardemin.hels.model.log.LogItem
-import com.vardemin.hels.model.log.toLogEntries
-import com.vardemin.hels.proto.LogEntries
+import com.vardemin.hels.utils.getNativePath
 import com.vardemin.hels.utils.nowInstant
 import com.vardemin.hels.utils.plus
 import kotlinx.coroutines.flow.firstOrNull
+import okio.FileSystem
+import okio.SYSTEM
 import kotlin.time.Duration
 
 internal class LogItemsDataSource(
@@ -14,14 +15,14 @@ internal class LogItemsDataSource(
     private val cacheDuration: Duration,
 ) : HelsDataSource<LogItem>("/logs") {
 
-    private val dataStore: DataStore<LogEntries> by lazy {
-        getLogsDataStore(fileName)
+    private val dataStore: DataStore<List<LogItem>?> by lazy {
+        GenericJsonDataStore(FileSystem.SYSTEM) { getNativePath(fileName) }
     }
 
     override suspend fun loadInitialData() {
         dataStore.data.firstOrNull()?.let {
-            it.items.forEach { item ->
-                emit(LogItem.from(item))
+            it.forEach { item ->
+                emit(item)
             }
         }
         super.loadInitialData()
@@ -30,9 +31,7 @@ internal class LogItemsDataSource(
     override suspend fun persistData() {
         dataStore.updateData {
             val now = nowInstant()
-            this.replayCache
-                .filter { it.dateTime.plus(cacheDuration) > now }
-                .toLogEntries()
+            this.replayCache.filter { it.dateTime.plus(cacheDuration) > now }
         }
         super.persistData()
     }

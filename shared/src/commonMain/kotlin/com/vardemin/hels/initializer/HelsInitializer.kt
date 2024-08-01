@@ -6,8 +6,10 @@ import com.vardemin.hels.data.LogItemsDataSource
 import com.vardemin.hels.data.RequestsDataSource
 import com.vardemin.hels.isDebug
 import com.vardemin.hels.log.LoggerImpl
+import com.vardemin.hels.log.RequestLoggerImpl
 import com.vardemin.hels.logger
 import com.vardemin.hels.migration.HelsMigrator
+import com.vardemin.hels.requestLogger
 import com.vardemin.hels.requests
 import com.vardemin.hels.requestsDataSource
 import com.vardemin.hels.server
@@ -41,6 +43,7 @@ object HelsInitializer {
         val loggerDataSource = LogItemsDataSource("log_items.pb", cachingDuration)
         requestsDataSource = RequestsDataSource("request_items.pb", cachingDuration)
         logger = LoggerImpl(loggerDataSource)
+        requestLogger = RequestLoggerImpl(requests)
         val dataSources = listOf(loggerDataSource, requests) + additionalDataSources
         val serverConfig = ServerConfig(port, actualFrontDirectory, dataSources)
         server = ServerImpl(serverConfig, json)

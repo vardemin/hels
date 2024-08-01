@@ -1,13 +1,16 @@
 PODS:
+  - Alamofire (5.0.5)
   - shared (1.0):
     - SSZipArchive (= 2.5.0)
   - SSZipArchive (2.5.0)
 
 DEPENDENCIES:
+  - Alamofire (~> 5.0.0-rc.2)
   - shared (from `../shared`)
 
 SPEC REPOS:
   trunk:
+    - Alamofire
     - SSZipArchive
 
 EXTERNAL SOURCES:
@@ -15,9 +18,10 @@ EXTERNAL SOURCES:
     :path: "../shared"
 
 SPEC CHECKSUMS:
+  Alamofire: df2f8f826963b08b9a870791ad48e07a10090b2e
   shared: 0b12e7abf80b644295d272315ae42dfe27e53c8e
   SSZipArchive: 47b4ac3dbcb37e319bde9dd3a706f627de1d77d3
 
-PODFILE CHECKSUM: 78d6cc1b71b232202c48a29d4e6c34972c534c73
+PODFILE CHECKSUM: 0454de0927ce8325474180a475c28d1064b46aa3
 
 COCOAPODS: 1.15.2

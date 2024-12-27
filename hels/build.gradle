@@ -1,16 +1,17 @@
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
     id 'kotlinx-serialization'
 }
 
 android {
     namespace 'com.vardemin.hels'
-    compileSdk 34
+    compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
-        minSdk 21
-        targetSdk 34
+        minSdk rootProject.minSdkVersion
+        targetSdk rootProject.compileSdkVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
@@ -33,10 +34,6 @@ android {
 
 dependencies {
 
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-
     implementation "io.ktor:ktor-server-core-jvm:$ktorVersion"
     implementation "io.ktor:ktor-server-cio:$ktorVersion"
     implementation "io.ktor:ktor-server-websockets:$ktorVersion"
@@ -45,14 +42,18 @@ dependencies {
     implementation "io.ktor:ktor-server-status-pages:$ktorVersion"
     implementation "io.ktor:ktor-server-cors:$ktorVersion"
 
+    implementation "androidx.room:room-runtime:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
+
+    implementation "net.gouline.kapsule:kapsule-core:$kapsuleVersion"
+
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
 
     implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
     implementation("com.squareup.okhttp3:okhttp")
-
-    implementation "androidx.datastore:datastore-core:$dataStoreVersion"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'

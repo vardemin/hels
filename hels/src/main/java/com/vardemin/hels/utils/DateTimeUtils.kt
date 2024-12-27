@@ -19,3 +19,12 @@ internal fun currentDateTime(): LocalDateTime {
 internal fun LocalDateTime.plus(duration: Duration): Instant {
     return toInstant(TimeZone.currentSystemDefault()).plus(duration)
 }
+
+internal fun Long.toLocalDateTime(): LocalDateTime {
+    return Instant.fromEpochMilliseconds(this)
+        .toLocalDateTime(TimeZone.currentSystemDefault())
+}
+
+internal fun LocalDateTime.toLong(): Long {
+    return this.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds()
+}

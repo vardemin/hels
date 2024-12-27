@@ -1,34 +1,28 @@
 package com.vardemin.hels.model.request
 
-import com.vardemin.hels.model.HelsItem
+import androidx.room.Embedded
+import com.vardemin.hels.model.HelsItemWithSession
+import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import java.util.UUID
 
 @Serializable
 internal data class RequestItem(
-    val id: String,
-    val request: RequestData,
-    val response: ResponseData?,
-    val error: RequestErrorData?
-) : Comparable<RequestItem>, HelsItem {
-    override fun compareTo(other: RequestItem): Int {
-        return request.time.compareTo(other.request.time)
-    }
+    override val sessionId: String,
+    val method: String,
+    val url: String,
+    val headers: Map<String, List<String>>,
+    val body: String?,
+    val time: LocalDateTime,
+    @Embedded
+    val response: ResponseItem?,
+    override val id: String = UUID.randomUUID().toString(),
+) : HelsItemWithSession
 
-    fun toCallItem(): RequestCallItem {
-        return RequestCallItem(
-            id,
-            request.method,
-            request.url,
-            response?.code ?: -1,
-            request.time,
-            response?.time ?: error?.time,
-            error?.message
-        )
-    }
-
-    override fun toJson(json: Json): String {
-        return json.encodeToString(this.toCallItem())
-    }
-}
+@Serializable
+internal data class ResponseItem(
+    val code: Int,
+    val headers: Map<String, List<String>>,
+    val body: String?,
+    val time: LocalDateTime
+)

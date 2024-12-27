@@ -1,10 +1,12 @@
 package com.vardemin.hels.server
 
-import com.vardemin.hels.data.HelsDataSource
+import com.vardemin.hels.data.HelsItemDataSource
+import com.vardemin.hels.data.SessionDataSource
 import java.io.File
 
 internal class ServerConfig(
     val port: Int = 1515,
     val frontDirectory: File,
-    val dataSources: List<HelsDataSource<*>> = listOf()
+    val sessionDataSource: SessionDataSource,
+    val itemDataSources: List<HelsItemDataSource<*>>
 )

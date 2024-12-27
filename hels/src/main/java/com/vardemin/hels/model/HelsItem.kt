@@ -1,7 +1,9 @@
 package com.vardemin.hels.model
 
-import kotlinx.serialization.json.Json
-
 interface HelsItem {
-    fun toJson(json: Json): String
+    val id: String
+}
+
+interface HelsItemWithSession : HelsItem {
+    val sessionId: String
 }

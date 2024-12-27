@@ -1,40 +1,70 @@
 package com.vardemin.hels.data
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.core.DataStoreFactory
+import com.vardemin.hels.data.db.dao.LogsDao
+import com.vardemin.hels.di.DataModule
+import com.vardemin.hels.model.PaginatedHelsItemList
 import com.vardemin.hels.model.log.LogItem
-import com.vardemin.hels.utils.DataStoreSerializer
-import com.vardemin.hels.utils.nowInstant
-import com.vardemin.hels.utils.plus
-import kotlinx.coroutines.flow.firstOrNull
-import java.io.File
-import kotlin.time.Duration
+import com.vardemin.hels.model.mapper.HelsLogsMapper
+import com.vardemin.hels.utils.mapEntity
+import com.vardemin.hels.utils.mapItem
+import com.vardemin.hels.utils.mapItemList
+import net.gouline.kapsule.Injects
+import net.gouline.kapsule.inject
+import net.gouline.kapsule.required
+import kotlin.coroutines.CoroutineContext
 
 internal class LogItemsDataSource(
-    directory: File,
-    private val cacheDuration: Duration,
-) : HelsDataSource<LogItem>("/logs") {
+    module: DataModule
+) : Injects<DataModule>, HelsItemDataSource<LogItem>(
+    "/logs",
+    "/ws/logs",
+    LogItem.serializer()
+) {
+    override val coroutineContext: CoroutineContext by required { defaultCoroutineContext }
+    private val logsDao: LogsDao by required { logsDao }
+    private val mapper: HelsLogsMapper by required { logsMapper }
 
-    private val dataStore: DataStore<List<LogItem>?> by lazy {
-        DataStoreFactory.create(
-            DataStoreSerializer<List<LogItem>>()
-        ) {
-            File(directory, "log_items.json")
+    init {
+        inject(module)
+    }
+
+    override suspend fun getPaginated(
+        sessionId: String,
+        page: Int,
+        perPage: Int
+    ): PaginatedHelsItemList<LogItem> {
+        val logItems = logsDao.getSessionLogs(sessionId, perPage, page * perPage)
+        return PaginatedHelsItemList(
+            logItems.mapItemList(mapper),
+            page,
+            perPage
+        )
+    }
+
+    override suspend fun getById(id: String): LogItem? {
+        return logsDao.getLogById(id)?.mapItem(mapper)
+    }
+
+    override suspend fun onUpdateItem(
+        sessionId: String,
+        id: String,
+        update: (LogItem) -> LogItem
+    ): LogItem? {
+        return getById(id)?.run(update)?.also {
+            logsDao.updateLog(it.mapEntity(mapper))
         }
     }
 
-    override suspend fun loadInitialData() {
-        dataStore.data.firstOrNull()?.let {
-            it.forEach { item ->
-                emit(item)
-            }
-        }
+    override suspend fun onRemoveItem(sessionId: String, id: String) {
+        logsDao.deleteById(id)
     }
 
-    override suspend fun persistData() {
-        dataStore.updateData {
-            val now = nowInstant()
-            this.replayCache.filter { it.dateTime.plus(cacheDuration) > now }
-        }
+    override suspend fun onReset(sessionId: String) {
+        logsDao.clearLogsForSession(sessionId)
+    }
+
+    override suspend fun onAddItem(sessionId: String, item: LogItem): LogItem {
+        logsDao.insertLogs(item.mapEntity(mapper))
+        return item
     }
 }

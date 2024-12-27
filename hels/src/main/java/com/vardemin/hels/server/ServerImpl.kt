@@ -1,19 +1,22 @@
 package com.vardemin.hels.server
 
 import android.util.Log
-import com.vardemin.hels.requests
+import com.vardemin.hels.data.HelsItemDataSource
+import com.vardemin.hels.data.HelsItemDataSource.Companion.HELS_DEFAULT_ITEMS_PER_PAGE
+import com.vardemin.hels.data.SessionDataSource
+import com.vardemin.hels.di.ComponentsModule
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.call
 import io.ktor.server.application.install
 import io.ktor.server.cio.CIO
-import io.ktor.server.engine.addShutdownHook
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.http.content.staticFiles
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
@@ -25,39 +28,25 @@ import io.ktor.websocket.close
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.channels.ticker
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.json.Json
+import net.gouline.kapsule.Injects
+import net.gouline.kapsule.inject
+import net.gouline.kapsule.required
 import kotlin.coroutines.CoroutineContext
 
 internal class ServerImpl(
-    private val config: ServerConfig,
-    json: Json
-) : HServer, CoroutineScope {
+    module: ComponentsModule
+) : Injects<ComponentsModule>, HServer, CoroutineScope {
 
+    private val sessionDataSource by required { sessionDataSource }
     override val coroutineContext: CoroutineContext = Dispatchers.IO
-
+    private val json by required { dataModule.json }
     private var replicaJob: Job? = null
 
-    init {
-        config.dataSources.forEach {
-            launch {
-                it.loadInitialData()
-            }
-        }
-        replicaJob = launch {
-            ticker(REPLICA_JOB_INTERVAL, REPLICA_JOB_INTERVAL, coroutineContext).consumeEach {
-                config.dataSources.forEach {
-                    it.persistData()
-                }
-            }
-        }
-    }
+    private val sessionId: String
+        get() = sessionDataSource.sessionId
 
     private val server by lazy {
-        embeddedServer(CIO, port = config.port, host = "0.0.0.0") {
+        embeddedServer(CIO, port = module.dataModule.port, host = "0.0.0.0") {
             install(WebSockets)
             install(ContentNegotiation) {
                 json(json)
@@ -73,35 +62,21 @@ internal class ServerImpl(
             }
 
             routing {
-                staticFiles("/", config.frontDirectory) {
+                staticFiles("/", module.dataModule.frontDirectory) {
                     default("index.html")
                     extensions("html", "htm")
                 }
                 route("/api/v1") {
-                    get("/requests/{id}") {
-                        val id = call.parameters["id"] ?: ""
-                        requests.replayCache.asReversed().find { it.id == id }?.let {
-                            call.respond(it)
-                        } ?: call.respond(HttpStatusCode.NotFound)
-                    }
+                    configureDataSourcesRoutes(module.allDataSources)
+                    configureSessionRoutes(sessionDataSource)
                 }
-                config.dataSources.forEach { dataSource ->
-                    webSocket(dataSource.path) {
-                        try {
-                            dataSource.collect {
-                                val jsonEncoded = it.toJson(json)
-                                send(Frame.Text(jsonEncoded))
-                            }
-                        } catch (e: Exception) {
-                            val errorMessage = e.message ?: "Error"
-                            close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
-                            dataSource.persistData()
-                            Log.d("HELS", errorMessage)
-                        }
-                    }
-                }
+                configureDataSourcesSockets(module.allDataSources)
             }
         }
+    }
+
+    init {
+        inject(module)
     }
 
     override fun start() {
@@ -111,17 +86,84 @@ internal class ServerImpl(
     override fun stop() {
         replicaJob?.cancel()
         replicaJob = null
-        config.dataSources.forEach {
-            launch {
-                it.persistData()
+        server.stop(GRACE_PERIOD_MILLIS, TIMEOUT_MILLIS)
+    }
+
+    private fun Route.configureDataSourcesRoutes(dataSources: List<HelsItemDataSource<*>>) {
+        dataSources.forEach { dataSource ->
+            get(dataSource.apiPath) {
+                runCatching {
+                    val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
+                    val perPage = call.request.queryParameters["items"]?.toIntOrNull()
+                        ?: HELS_DEFAULT_ITEMS_PER_PAGE
+                    dataSource.getPaginated(sessionId, page, perPage)
+                }.onSuccess {
+                    call.respond(it)
+                }.onFailure {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        it.message ?: "Some error occurred"
+                    )
+                }
+            }
+            get("${dataSource.apiPath}/{id}") {
+                val id = call.parameters["id"] ?: ""
+                runCatching {
+                    dataSource.getById(id)?.let {
+                        call.respond(it)
+                    } ?: call.respond(
+                        HttpStatusCode.NotFound,
+                        "Item with id $id not found"
+                    )
+                }.onFailure {
+                    call.respond(
+                        HttpStatusCode.BadRequest,
+                        it.message ?: "Some error occurred"
+                    )
+                }
             }
         }
-        server.stop(GRACE_PERIOD_MILLIS, TIMEOUT_MILLIS)
+    }
+
+    private fun Route.configureSessionRoutes(sessionDataSource: SessionDataSource) {
+        get(sessionDataSource.apiPath) {
+            runCatching {
+                sessionDataSource.getCurrentSession()?.let {
+                    call.respond(it)
+                } ?: call.respond(
+                    HttpStatusCode.NotFound,
+                    "Current session is not configured"
+                )
+            }.onFailure {
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    it.message ?: "Some error occurred"
+                )
+            }
+        }
+    }
+
+    private fun Route.configureDataSourcesSockets(
+        dataSources: List<HelsItemDataSource<*>>
+    ) {
+        dataSources.forEach { dataSource ->
+            webSocket(dataSource.wsPath) {
+                try {
+                    dataSource.operationFlow.collect {
+                        val jsonEncoded = it.toJson(json)
+                        send(Frame.Text(jsonEncoded))
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = e.message ?: "Error"
+                    close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
+                    Log.d("HELS", errorMessage)
+                }
+            }
+        }
     }
 
     private companion object {
         private const val GRACE_PERIOD_MILLIS = 1000L
         private const val TIMEOUT_MILLIS = 2000L
-        private const val REPLICA_JOB_INTERVAL = 600000L
     }
 }

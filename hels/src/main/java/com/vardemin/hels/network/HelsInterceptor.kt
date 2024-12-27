@@ -1,10 +1,6 @@
 package com.vardemin.hels.network
 
-import com.vardemin.hels.model.request.RequestData
-import com.vardemin.hels.model.request.RequestErrorData
-import com.vardemin.hels.model.request.RequestItem
-import com.vardemin.hels.model.request.ResponseData
-import com.vardemin.hels.requests
+import com.vardemin.hels.Hels
 import kotlinx.datetime.Clock
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
@@ -17,17 +13,18 @@ import okhttp3.internal.http.promisesBody
 import okio.Buffer
 import okio.EOFException
 import java.nio.charset.Charset
-import java.util.UUID
 
-class HelsInterceptor : Interceptor {
+class HelsInterceptor(
+    private val maxBodySize: Long = HELS_MAX_BODY_DEFAULT_SIZE
+) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
         val requestBody = request.body
         val headers = request.headers
-        val requestId = UUID.randomUUID().toString()
         var bodyString: String? = null
         if (requestBody != null &&
+            requestBody.contentLength() in 1..maxBodySize &&
             !bodyHasUnknownEncoding(request.headers) &&
             !requestBody.isDuplex() &&
             !requestBody.isOneShot() &&
@@ -40,29 +37,19 @@ class HelsInterceptor : Interceptor {
                 bodyString = buffer.readString(charset)
             }
         }
-        val now = currentDateTime()
-        val requestItem = RequestItem(
-            requestId,
-            RequestData(
-                request.method,
-                request.url.toString(),
-                headers.toMultimap(),
-                bodyString,
-                now
-            ),
-            null,
-            null
+        val requestId = Hels.logRequest(
+            request.method,
+            request.url.toString(),
+            headers.toMultimap(),
+            bodyString,
+            currentDateTime()
         )
-        requests.tryEmit(requestItem)
+
         val response: Response
         try {
             response = chain.proceed(request)
         } catch (e: Exception) {
-            requests.tryEmit(
-                requestItem.copy(
-                    error = RequestErrorData(e.message ?: "Unknown error", currentDateTime())
-                )
-            )
+            Hels.logRequestError(requestId, e.message ?: "Unknown error", currentDateTime())
             throw e
         }
         val endTime = currentDateTime()
@@ -81,20 +68,17 @@ class HelsInterceptor : Interceptor {
             val buffer = source.buffer
 
 
-            if (contentLength != 0L) {
+            if (contentLength in 1..maxBodySize) {
                 val charset: Charset = responseBody.contentType().charsetOrUtf8()
                 responseString = buffer.clone().readString(charset)
             }
         }
-        requests.tryEmit(
-            requestItem.copy(
-                response = ResponseData(
-                    response.code,
-                    responseHeaders.toMultimap(),
-                    responseString,
-                    endTime
-                )
-            )
+        Hels.logResponse(
+            requestId,
+            response.code,
+            responseHeaders.toMultimap(),
+            responseString,
+            endTime
         )
         return response
     }
@@ -136,5 +120,9 @@ class HelsInterceptor : Interceptor {
 
     private fun currentDateTime(): LocalDateTime {
         return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    }
+
+    companion object {
+        private const val HELS_MAX_BODY_DEFAULT_SIZE = 1024L
     }
 }

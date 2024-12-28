@@ -3,7 +3,6 @@ package com.vardemin.hels
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +41,7 @@ fun InputScreen() {
         )
         Button(
             onClick = {
-                HelsLog.d(titleState, bodyState, mapOf(
+                Hels.d(titleState, bodyState, mapOf(
                     "Version" to "23.4.1",
                     "Code" to Random.nextInt(200..1000).toString()
                 ))
@@ -52,7 +51,7 @@ fun InputScreen() {
         }
         Button(
             onClick = {
-                HelsLog.i(titleState, bodyState, mapOf(
+                Hels.i(titleState, bodyState, mapOf(
                     "Version" to "23.4.1",
                     "Code" to Random.nextInt(200..1000).toString()
                 ))
@@ -69,14 +68,14 @@ fun InputScreen() {
         }
         Button(
             onClick = {
-                HelServer.stop()
+                Hels.stop()
             }
         ) {
             Text(text = "Stop")
         }
         Button(
             onClick = {
-                HelServer.start()
+                Hels.start()
             }
         ) {
             Text(text = "Start")

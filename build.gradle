@@ -1,6 +1,7 @@
 buildscript {
     ext {
         kotlinVersion = '2.0.21'
+        roomVersion = '2.6.1'
     }
 }
 
@@ -11,6 +12,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.serialization' version "${kotlinVersion}"
     id 'com.google.devtools.ksp' version "${kotlinVersion}-1.0.27" apply false
     id 'org.jetbrains.kotlin.plugin.compose' version "${kotlinVersion}" apply false
+    id 'androidx.room' version "${roomVersion}" apply false
 }
 
 ext {
@@ -24,4 +26,5 @@ ext {
     dataStoreVersion = '1.1.1'
     roomVersion = '2.6.1'
     kapsuleVersion = '1.2.3'
+    coreKtxVersion = "1.13.1"
 }

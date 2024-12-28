@@ -34,8 +34,9 @@ object EmptyNetworkLogger: HNetworkLogger {
         responseHeaders: Map<String, List<String>>,
         responseBody: String?,
         responseTime: LocalDateTime
-    ) {
+    ) : String {
         // No op
+        return ""
     }
 
 }

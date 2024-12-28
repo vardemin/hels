@@ -67,10 +67,15 @@ internal class ServerImpl(
                     extensions("html", "htm")
                 }
                 route("/api/v1") {
-                    configureDataSourcesRoutes(module.allDataSources)
                     configureSessionRoutes(sessionDataSource)
+
                 }
-                configureDataSourcesSockets(module.allDataSources)
+
+                module.allDataSources.forEach {
+                    it.configureRouting(this) {
+                        sessionId
+                    }
+                }
             }
         }
     }
@@ -89,42 +94,6 @@ internal class ServerImpl(
         server.stop(GRACE_PERIOD_MILLIS, TIMEOUT_MILLIS)
     }
 
-    private fun Route.configureDataSourcesRoutes(dataSources: List<HelsItemDataSource<*>>) {
-        dataSources.forEach { dataSource ->
-            get(dataSource.apiPath) {
-                runCatching {
-                    val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
-                    val perPage = call.request.queryParameters["items"]?.toIntOrNull()
-                        ?: HELS_DEFAULT_ITEMS_PER_PAGE
-                    dataSource.getPaginated(sessionId, page, perPage)
-                }.onSuccess {
-                    call.respond(it)
-                }.onFailure {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        it.message ?: "Some error occurred"
-                    )
-                }
-            }
-            get("${dataSource.apiPath}/{id}") {
-                val id = call.parameters["id"] ?: ""
-                runCatching {
-                    dataSource.getById(id)?.let {
-                        call.respond(it)
-                    } ?: call.respond(
-                        HttpStatusCode.NotFound,
-                        "Item with id $id not found"
-                    )
-                }.onFailure {
-                    call.respond(
-                        HttpStatusCode.BadRequest,
-                        it.message ?: "Some error occurred"
-                    )
-                }
-            }
-        }
-    }
-
     private fun Route.configureSessionRoutes(sessionDataSource: SessionDataSource) {
         get(sessionDataSource.apiPath) {
             runCatching {
@@ -139,25 +108,6 @@ internal class ServerImpl(
                     HttpStatusCode.BadRequest,
                     it.message ?: "Some error occurred"
                 )
-            }
-        }
-    }
-
-    private fun Route.configureDataSourcesSockets(
-        dataSources: List<HelsItemDataSource<*>>
-    ) {
-        dataSources.forEach { dataSource ->
-            webSocket(dataSource.wsPath) {
-                try {
-                    dataSource.operationFlow.collect {
-                        val jsonEncoded = it.toJson(json)
-                        send(Frame.Text(jsonEncoded))
-                    }
-                } catch (e: Exception) {
-                    val errorMessage = e.message ?: "Error"
-                    close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
-                    Log.d("HELS", errorMessage)
-                }
             }
         }
     }

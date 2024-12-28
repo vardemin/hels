@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        HelServer.stop()
+        Hels.stop()
         super.onDestroy()
 
     }

@@ -14,7 +14,7 @@ data class LogItem(
     val level: LogLevel,
     val properties: Map<String, String>,
     override val id: String = UUID.randomUUID().toString(),
-) : Comparable<LogItem>, HelsItemWithSession {
+) : Comparable<LogItem>, HelsItemWithSession() {
     override fun compareTo(other: LogItem): Int {
         return dateTime.compareTo(other.dateTime)
     }

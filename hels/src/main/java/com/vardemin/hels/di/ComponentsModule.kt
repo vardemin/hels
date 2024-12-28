@@ -7,7 +7,7 @@ import com.vardemin.hels.data.SessionDataSource
 
 internal class ComponentsModule(
     val dataModule: DataModule,
-    additionalDataSource: Array<HelsItemDataSource<*>>
+    additionalDataSource: Array<out HelsItemDataSource<*>>
 ) {
     val logItemsDataSource = LogItemsDataSource(dataModule)
     val requestsDataSource = RequestsDataSource(dataModule)

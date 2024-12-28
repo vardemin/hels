@@ -17,6 +17,9 @@ internal interface LogsDao {
     @Query("SELECT * FROM logs WHERE id = :id")
     suspend fun getLogById(id: String): LogItemEntity?
 
+    @Query("SELECT COUNT(id) FROM logs WHERE sessionId = :sessionId")
+    suspend fun getSessionLogsCount(sessionId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertLogs(vararg logs: LogItemEntity)
 

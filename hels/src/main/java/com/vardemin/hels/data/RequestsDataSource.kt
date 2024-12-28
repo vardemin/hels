@@ -14,12 +14,15 @@ import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 internal class RequestsDataSource(
     module: DataModule
 ) : Injects<DataModule>, HelsItemDataSource<RequestItem>(
     "/requests",
     "/ws/requests",
+    module.json,
     RequestItem.serializer()
 ) {
     override val coroutineContext: CoroutineContext = Dispatchers.Default.limitedParallelism(1)
@@ -37,10 +40,14 @@ internal class RequestsDataSource(
         perPage: Int
     ): PaginatedHelsItemList<RequestItem> {
         val entities = dao.getSessionRequests(sessionId, perPage, page * perPage)
+        val totalPages = dao.getSessionRequestsCount(sessionId).run {
+            this.floorDiv(perPage) + this.rem(perPage).sign.absoluteValue
+        }
         return PaginatedHelsItemList(
             entities.mapItemList(liteMapper),
             page,
-            perPage
+            perPage,
+            totalPages
         )
     }
 

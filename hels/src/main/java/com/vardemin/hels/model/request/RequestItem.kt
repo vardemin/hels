@@ -17,7 +17,7 @@ internal data class RequestItem(
     @Embedded
     val response: ResponseItem?,
     override val id: String = UUID.randomUUID().toString(),
-) : HelsItemWithSession
+) : HelsItemWithSession()
 
 @Serializable
 internal data class ResponseItem(

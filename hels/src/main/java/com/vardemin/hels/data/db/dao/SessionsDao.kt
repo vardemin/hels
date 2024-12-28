@@ -23,7 +23,7 @@ internal interface SessionsDao {
     suspend fun deleteSessions(vararg  sessions: SessionEntity)
 
     @Query("DELETE FROM sessions WHERE id = :sessionId")
-    suspend fun deleteSessionById(sessionId: String): SessionEntity
+    suspend fun deleteSessionById(sessionId: String)
 
     @Query("DELETE FROM sessions")
     suspend fun deleteAll()

@@ -17,6 +17,9 @@ internal interface RequestsDao {
     @Query("SELECT * FROM requests WHERE id = :id")
     suspend fun getRequestById(id: String): RequestEntity?
 
+    @Query("SELECT COUNT(id) FROM requests WHERE sessionId = :sessionId")
+    suspend fun getSessionRequestsCount(sessionId: String): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRequests(vararg requests: RequestEntity)
 

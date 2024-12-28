@@ -2,7 +2,9 @@ plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
     id 'com.google.devtools.ksp'
+    id 'androidx.room'
     id 'kotlinx-serialization'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -15,6 +17,10 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
+    }
+
+    room {
+        schemaDirectory "$projectDir/schemas"
     }
 
     buildTypes {

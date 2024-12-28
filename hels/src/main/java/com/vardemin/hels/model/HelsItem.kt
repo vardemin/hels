@@ -1,9 +1,13 @@
 package com.vardemin.hels.model
 
-interface HelsItem {
-    val id: String
+import kotlinx.serialization.Serializable
+
+@Serializable
+abstract class HelsItem {
+    abstract val id: String
 }
 
-interface HelsItemWithSession : HelsItem {
-    val sessionId: String
+@Serializable
+abstract class HelsItemWithSession: HelsItem() {
+    abstract val sessionId: String
 }

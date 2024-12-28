@@ -11,4 +11,4 @@ data class SessionItem(
     override val id: String = UUID.randomUUID().toString(),
     val started: LocalDateTime = currentDateTime(),
     val properties: Map<String, String> = mapOf()
-) : HelsItem
+) : HelsItem()

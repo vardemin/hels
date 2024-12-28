@@ -12,12 +12,15 @@ import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.absoluteValue
+import kotlin.math.sign
 
 internal class LogItemsDataSource(
     module: DataModule
 ) : Injects<DataModule>, HelsItemDataSource<LogItem>(
     "/logs",
     "/ws/logs",
+    module.json,
     LogItem.serializer()
 ) {
     override val coroutineContext: CoroutineContext by required { defaultCoroutineContext }
@@ -34,10 +37,14 @@ internal class LogItemsDataSource(
         perPage: Int
     ): PaginatedHelsItemList<LogItem> {
         val logItems = logsDao.getSessionLogs(sessionId, perPage, page * perPage)
+        val totalPages = logsDao.getSessionLogsCount(sessionId).run {
+            this.floorDiv(perPage) + this.rem(perPage).sign.absoluteValue
+        }
         return PaginatedHelsItemList(
             logItems.mapItemList(mapper),
             page,
-            perPage
+            perPage,
+            totalPages
         )
     }
 

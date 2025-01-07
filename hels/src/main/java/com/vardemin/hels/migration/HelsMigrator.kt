@@ -9,7 +9,7 @@ import java.io.IOException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-object HelsMigrator {
+internal object HelsMigrator {
 
     private const val KEY_FRONT_VERSION = "hels_front_version"
 

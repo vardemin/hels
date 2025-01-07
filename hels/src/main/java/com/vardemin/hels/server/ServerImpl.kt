@@ -1,8 +1,6 @@
 package com.vardemin.hels.server
 
 import android.util.Log
-import com.vardemin.hels.data.HelsItemDataSource
-import com.vardemin.hels.data.HelsItemDataSource.Companion.HELS_DEFAULT_ITEMS_PER_PAGE
 import com.vardemin.hels.data.SessionDataSource
 import com.vardemin.hels.di.ComponentsModule
 import io.ktor.http.HttpStatusCode
@@ -18,7 +16,6 @@ import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
-import io.ktor.server.routing.route
 import io.ktor.server.routing.routing
 import io.ktor.server.websocket.WebSockets
 import io.ktor.server.websocket.webSocket
@@ -28,6 +25,7 @@ import io.ktor.websocket.close
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.serialization.encodeToString
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
@@ -66,11 +64,7 @@ internal class ServerImpl(
                     default("index.html")
                     extensions("html", "htm")
                 }
-                route("/api/v1") {
-                    configureSessionRoutes(sessionDataSource)
-
-                }
-
+                configureSessionRoutes(sessionDataSource)
                 module.allDataSources.forEach {
                     it.configureRouting(this) {
                         sessionId
@@ -108,6 +102,18 @@ internal class ServerImpl(
                     HttpStatusCode.BadRequest,
                     it.message ?: "Some error occurred"
                 )
+            }
+        }
+        webSocket(sessionDataSource.wsPath) {
+            try {
+                sessionDataSource.sessionsFlow.collect {
+                    val jsonEncoded: String = json.encodeToString(it)
+                    send(Frame.Text(jsonEncoded))
+                }
+            } catch (e: Exception) {
+                val errorMessage = e.message ?: "Error"
+                close(CloseReason(CloseReason.Codes.INTERNAL_ERROR, errorMessage))
+                Log.d("HELS", errorMessage)
             }
         }
     }

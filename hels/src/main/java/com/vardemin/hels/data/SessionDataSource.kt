@@ -1,6 +1,7 @@
 package com.vardemin.hels.data
 
 import android.content.SharedPreferences
+import com.vardemin.hels.data.HelsItemDataSource.Companion.API_VERSION
 import com.vardemin.hels.data.db.dao.SessionsDao
 import com.vardemin.hels.di.DataModule
 import com.vardemin.hels.model.mapper.HelsSessionMapper
@@ -21,7 +22,7 @@ internal class SessionDataSource(
     module: DataModule,
     private val itemDataSources: List<HelsItemDataSource<*>>
 ) : Injects<DataModule>, CoroutineScope {
-    val apiPath: String = "/session"
+    val apiPath: String = "$API_VERSION/session"
     val wsPath: String = "/ws/session"
     override val coroutineContext: CoroutineContext by required { defaultCoroutineContext }
     private val dao: SessionsDao by required { sessionsDao }
@@ -51,24 +52,37 @@ internal class SessionDataSource(
     }
 
     suspend fun getCurrentSession(): SessionItem? {
-        val currentSessionId: String = sessionId
-        if (currentSessionId.isNotEmpty()) return null
-        return dao.getSessionById(currentSessionId).mapItem(mapper)
+        return currentSession ?: run {
+            val currentSessionId: String = sessionId
+            if (currentSessionId.isNotEmpty()) {
+                null
+            } else dao.getSessionById(currentSessionId).mapItem(mapper)
+        }
     }
 
-    suspend fun applyLastSession() {
+    suspend fun applyLastSession(initProps: Map<String, String> = emptyMap()) {
         getCurrentSession()?.let {
-            currentSession = it
-            mutableSessionFlow.emit(it)
-        } ?: startNewSession()
+            val targetSession = if (initProps.isNotEmpty()) {
+                val newProperties = it.properties.toMutableMap().apply {
+                    initProps.entries.forEach { (key, value) ->
+                        this[key] = value
+                    }
+                }
+                val newSession = it.copy(properties = newProperties)
+                update(newSession)
+                newSession
+            } else it
+            currentSession = targetSession
+            mutableSessionFlow.emit(targetSession)
+        } ?: startNewSession(initProps)
     }
 
-    suspend fun startNewSession(): SessionItem {
+    suspend fun startNewSession(initProps: Map<String, String> = emptyMap()): SessionItem {
         previousSessionId.takeIf { it.isNotEmpty() }?.let {
             delete(it)
         }
         val currentSessionId = sessionId
-        val newSession = SessionItem()
+        val newSession = SessionItem(properties = initProps)
         dao.insertSession(newSession.mapEntity(mapper))
         sessionId = newSession.id
         previousSessionId = currentSessionId

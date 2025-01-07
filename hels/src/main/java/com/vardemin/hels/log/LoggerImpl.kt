@@ -1,8 +1,10 @@
 package com.vardemin.hels.log
 
+import com.vardemin.hels.data.EventItemsDataSource
 import com.vardemin.hels.data.LogItemsDataSource
 import com.vardemin.hels.data.SessionDataSource
 import com.vardemin.hels.di.ComponentsModule
+import com.vardemin.hels.model.event.EventItem
 import com.vardemin.hels.model.log.LogItem
 import com.vardemin.hels.model.log.LogLevel
 import com.vardemin.hels.utils.currentDateTime
@@ -17,35 +19,49 @@ internal class LoggerImpl(
 
     private val sessionDataSource: SessionDataSource by required { sessionDataSource }
     private val dataSource: LogItemsDataSource by required { logItemsDataSource }
+    private val eventsDataSource: EventItemsDataSource by required { eventsDataSource }
 
     private val sessionId get() = sessionDataSource.currentSession?.id ?: ""
-    private val globalProperties get() = sessionDataSource.currentSession?.properties ?: emptyMap()
 
     init {
         inject(module)
     }
 
-    override fun d(tag: String, message: String, properties: Map<String, String>) {
-        pushLog(LogLevel.Debug, tag, message, properties)
+    override fun d(tag: String, message: String) {
+        pushLog(LogLevel.Debug, tag, message)
     }
 
-    override fun v(tag: String, message: String, properties: Map<String, String>) {
-        pushLog(LogLevel.Verbose, tag, message, properties)
+    override fun v(tag: String, message: String) {
+        pushLog(LogLevel.Verbose, tag, message)
     }
 
-    override fun i(tag: String, message: String, properties: Map<String, String>) {
-        pushLog(LogLevel.Info, tag, message, properties)
+    override fun i(tag: String, message: String) {
+        pushLog(LogLevel.Info, tag, message)
+    }
+
+    override fun e(tag: String, message: String) {
+        pushLog(LogLevel.Error, tag, message)
+    }
+
+    override fun e(tag: String, throwable: Throwable?) {
+        pushLog(LogLevel.Error, tag, throwable?.message ?: "Some error occurred")
+    }
+
+    override fun event(title: String, message: String, properties: Map<String, String>) {
+        eventsDataSource.add(
+            sessionId,
+            EventItem(sessionId, title, message, getLocalDateTime(), properties)
+        )
     }
 
     private fun pushLog(
         level: LogLevel,
-        title: String,
-        message: String,
-        props: Map<String, String>
+        tag: String,
+        message: String
     ) {
         dataSource.add(
             sessionId,
-            LogItem(sessionId, title, message, getLocalDateTime(), level, globalProperties + props)
+            LogItem(sessionId, tag, message, getLocalDateTime(), level)
         )
     }
 

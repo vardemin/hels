@@ -13,7 +13,7 @@ internal data class RequestItem(
     val url: String,
     val headers: Map<String, List<String>>,
     val body: String?,
-    val time: LocalDateTime,
+    override val time: LocalDateTime,
     @Embedded
     val response: ResponseItem?,
     override val id: String = UUID.randomUUID().toString(),

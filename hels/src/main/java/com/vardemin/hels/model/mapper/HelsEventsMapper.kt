@@ -1,36 +1,34 @@
 package com.vardemin.hels.model.mapper
 
-import com.vardemin.hels.data.db.entity.LogItemEntity
+import com.vardemin.hels.data.db.entity.EventEntity
 import com.vardemin.hels.model.HelsMapper
-import com.vardemin.hels.model.log.LogItem
-import com.vardemin.hels.model.mapper.LogLevelMapper.mapEntity
-import com.vardemin.hels.model.mapper.LogLevelMapper.mapItem
+import com.vardemin.hels.model.event.EventItem
 import com.vardemin.hels.utils.toLocalDateTime
 import com.vardemin.hels.utils.toLong
 
-internal class HelsLogsMapper: HelsMapper<LogItemEntity, LogItem> {
-    override fun mapItem(entity: LogItemEntity): LogItem {
+internal class HelsEventsMapper : HelsMapper<EventEntity, EventItem> {
+    override fun mapItem(entity: EventEntity): EventItem {
         return with(entity) {
-            LogItem(
+            EventItem(
                 sessionId,
                 title,
                 message,
                 dateTime.toLocalDateTime(),
-                level.mapItem(),
+                properties,
                 id
             )
         }
     }
 
-    override fun mapDb(item: LogItem): LogItemEntity {
+    override fun mapDb(item: EventItem): EventEntity {
         return with(item) {
-            LogItemEntity(
+            EventEntity(
                 id,
                 sessionId,
                 title,
                 message,
                 time.toLong(),
-                level.mapEntity(),
+                properties
             )
         }
     }

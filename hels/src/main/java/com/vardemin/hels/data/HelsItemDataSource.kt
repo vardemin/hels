@@ -3,7 +3,6 @@ package com.vardemin.hels.data
 import android.util.Log
 import com.vardemin.hels.model.HelsItem
 import com.vardemin.hels.model.HelsOperation
-import com.vardemin.hels.model.PaginatedHelsItemList
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
@@ -20,7 +19,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 
 abstract class HelsItemDataSource<Item : HelsItem>(
@@ -30,15 +32,17 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     val serializer: KSerializer<Item>
 ) : CoroutineScope {
 
+    open val defaultItemsCount: Int = HELS_DEFAULT_ITEMS_PER_PAGE
+
     protected val mutableOperationFlow: MutableSharedFlow<HelsOperation> =
         MutableSharedFlow(extraBufferCapacity = HELS_EXTRA_BUFFER_CAPACITY)
     val operationFlow: SharedFlow<HelsOperation> = mutableOperationFlow.asSharedFlow()
 
     abstract suspend fun getPaginated(
         sessionId: String,
-        page: Int,
+        after: LocalDateTime? = null,
         perPage: Int = HELS_DEFAULT_ITEMS_PER_PAGE
-    ): PaginatedHelsItemList<Item>
+    ): List<Item>
 
     abstract suspend fun getById(
         id: String
@@ -85,13 +89,12 @@ abstract class HelsItemDataSource<Item : HelsItem>(
         with(route) {
             get("$API_VERSION/$apiPath") {
                 runCatching {
-                    val page = call.request.queryParameters["page"]?.toIntOrNull() ?: 0
-                    val perPage = call.request.queryParameters["items"]?.toIntOrNull()
-                        ?: HELS_DEFAULT_ITEMS_PER_PAGE
-                    getPaginated(sessionIdProvider(), page, perPage)
-                }.onSuccess {
+                    val lastDate = call.request.queryParameters["last"]?.toLocalDateTime()
+                    val items = call.request.queryParameters["items"]?.toIntOrNull()
+                        ?: defaultItemsCount
+                    val result = getPaginated(sessionIdProvider(), lastDate, items)
                     call.respondText(
-                        json.encodeToString(PaginatedHelsItemList.serializer(serializer), it),
+                        json.encodeToString(ListSerializer(serializer), result),
                         ContentType.Application.Json
                     )
                 }.onFailure {

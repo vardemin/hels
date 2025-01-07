@@ -13,8 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.vardemin.hels.ui.NetworkClient
-import kotlin.random.Random
-import kotlin.random.nextInt
 
 @Composable
 fun InputScreen() {
@@ -41,23 +39,24 @@ fun InputScreen() {
         )
         Button(
             onClick = {
-                Hels.d(titleState, bodyState, mapOf(
-                    "Version" to "23.4.1",
-                    "Code" to Random.nextInt(200..1000).toString()
-                ))
+                Hels.d(titleState, bodyState)
             }
         ) {
-            Text(text = "Log debug event")
+            Text(text = "Log debug message")
         }
         Button(
             onClick = {
-                Hels.i(titleState, bodyState, mapOf(
-                    "Version" to "23.4.1",
-                    "Code" to Random.nextInt(200..1000).toString()
-                ))
+                Hels.i(titleState, bodyState)
             }
         ) {
-            Text(text = "Log info event")
+            Text(text = "Log info message")
+        }
+        Button(
+            onClick = {
+                Hels.event(titleState, bodyState)
+            }
+        ) {
+            Text(text = "Log event")
         }
         Button(
             onClick = {

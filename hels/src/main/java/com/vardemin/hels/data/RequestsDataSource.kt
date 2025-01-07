@@ -2,20 +2,19 @@ package com.vardemin.hels.data
 
 import com.vardemin.hels.data.db.dao.RequestsDao
 import com.vardemin.hels.di.DataModule
-import com.vardemin.hels.model.PaginatedHelsItemList
 import com.vardemin.hels.model.mapper.HelsLiteRequestsMapper
 import com.vardemin.hels.model.mapper.HelsRequestsMapper
 import com.vardemin.hels.model.request.RequestItem
 import com.vardemin.hels.utils.mapEntity
 import com.vardemin.hels.utils.mapItem
 import com.vardemin.hels.utils.mapItemList
+import com.vardemin.hels.utils.toLong
 import kotlinx.coroutines.Dispatchers
+import kotlinx.datetime.LocalDateTime
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.absoluteValue
-import kotlin.math.sign
 
 internal class RequestsDataSource(
     module: DataModule
@@ -36,19 +35,15 @@ internal class RequestsDataSource(
 
     override suspend fun getPaginated(
         sessionId: String,
-        page: Int,
+        after: LocalDateTime?,
         perPage: Int
-    ): PaginatedHelsItemList<RequestItem> {
-        val entities = dao.getSessionRequests(sessionId, perPage, page * perPage)
-        val totalPages = dao.getSessionRequestsCount(sessionId).run {
-            this.floorDiv(perPage) + this.rem(perPage).sign.absoluteValue
+    ): List<RequestItem> {
+        val items = if (after != null) {
+            dao.getSessionRequestsAfter(sessionId, perPage, after.toLong())
+        } else {
+            dao.getSessionRequests(sessionId, perPage)
         }
-        return PaginatedHelsItemList(
-            entities.mapItemList(liteMapper),
-            page,
-            perPage,
-            totalPages
-        )
+        return items.mapItemList(liteMapper)
     }
 
     override suspend fun getById(id: String): RequestItem? {

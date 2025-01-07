@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.room.Room
 import com.vardemin.hels.data.db.HelsDatabase
+import com.vardemin.hels.model.mapper.HelsEventsMapper
 import com.vardemin.hels.model.mapper.HelsLiteRequestsMapper
 import com.vardemin.hels.model.mapper.HelsLogsMapper
 import com.vardemin.hels.model.mapper.HelsRequestsMapper
@@ -24,6 +25,7 @@ internal class DataModule(
         .build()
 
     val logsDao get() = database.logsDao()
+    val eventsDao get() = database.eventsDao()
     val requestsDao get() = database.requestsDao()
     val sessionsDao get() = database.sessionsDao()
 
@@ -34,6 +36,7 @@ internal class DataModule(
     val requestsMapper get() = HelsRequestsMapper()
     val requestsLiteMapper get() = HelsLiteRequestsMapper()
     val sessionsMapper get() = HelsSessionMapper()
+    val eventsMapper get() = HelsEventsMapper()
 
     val json = Json {
         ignoreUnknownKeys = true

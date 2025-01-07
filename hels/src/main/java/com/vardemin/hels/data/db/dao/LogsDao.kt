@@ -11,8 +11,11 @@ import com.vardemin.hels.data.db.entity.LogItemEntity
 @Dao
 internal interface LogsDao {
 
-    @Query("SELECT * FROM logs WHERE sessionId = :sessionId ORDER BY dateTime DESC LIMIT :limit OFFSET :offset")
-    suspend fun getSessionLogs(sessionId: String, limit: Int, offset: Int): List<LogItemEntity>
+    @Query("SELECT * FROM logs WHERE sessionId = :sessionId ORDER BY dateTime DESC LIMIT :limit")
+    suspend fun getSessionLogs(sessionId: String, limit: Int): List<LogItemEntity>
+
+    @Query("SELECT * FROM logs WHERE sessionId = :sessionId AND dateTime < :last ORDER BY dateTime DESC LIMIT :limit")
+    suspend fun getSessionLogsAfter(sessionId: String, limit: Int, last: Long): List<LogItemEntity>
 
     @Query("SELECT * FROM logs WHERE id = :id")
     suspend fun getLogById(id: String): LogItemEntity?

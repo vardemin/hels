@@ -21,18 +21,6 @@ object Hels : HServer, HLogger, HNetworkLogger {
         server.stop()
     }
 
-    override fun d(tag: String, message: String, properties: Map<String, String>) {
-        logger.d(tag, message, properties)
-    }
-
-    override fun v(tag: String, message: String, properties: Map<String, String>) {
-        logger.v(tag, message, properties)
-    }
-
-    override fun i(tag: String, message: String, properties: Map<String, String>) {
-        logger.i(tag, message, properties)
-    }
-
     override fun logRequest(
         method: String,
         url: String,
@@ -75,5 +63,29 @@ object Hels : HServer, HLogger, HNetworkLogger {
             responseBody,
             responseTime
         )
+    }
+
+    override fun d(tag: String, message: String) {
+        logger.d(tag, message)
+    }
+
+    override fun v(tag: String, message: String) {
+        logger.v(tag, message)
+    }
+
+    override fun i(tag: String, message: String) {
+        logger.i(tag, message)
+    }
+
+    override fun e(tag: String, message: String) {
+        logger.e(tag, message)
+    }
+
+    override fun e(tag: String, throwable: Throwable?) {
+        logger.e(tag, throwable)
+    }
+
+    override fun event(title: String, message: String, properties: Map<String, String>) {
+        logger.event(title, message, properties)
     }
 }

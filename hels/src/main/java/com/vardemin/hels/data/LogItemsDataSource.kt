@@ -2,18 +2,17 @@ package com.vardemin.hels.data
 
 import com.vardemin.hels.data.db.dao.LogsDao
 import com.vardemin.hels.di.DataModule
-import com.vardemin.hels.model.PaginatedHelsItemList
 import com.vardemin.hels.model.log.LogItem
 import com.vardemin.hels.model.mapper.HelsLogsMapper
 import com.vardemin.hels.utils.mapEntity
 import com.vardemin.hels.utils.mapItem
 import com.vardemin.hels.utils.mapItemList
+import com.vardemin.hels.utils.toLong
+import kotlinx.datetime.LocalDateTime
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
 import kotlin.coroutines.CoroutineContext
-import kotlin.math.absoluteValue
-import kotlin.math.sign
 
 internal class LogItemsDataSource(
     module: DataModule
@@ -33,19 +32,15 @@ internal class LogItemsDataSource(
 
     override suspend fun getPaginated(
         sessionId: String,
-        page: Int,
+        after: LocalDateTime?,
         perPage: Int
-    ): PaginatedHelsItemList<LogItem> {
-        val logItems = logsDao.getSessionLogs(sessionId, perPage, page * perPage)
-        val totalPages = logsDao.getSessionLogsCount(sessionId).run {
-            this.floorDiv(perPage) + this.rem(perPage).sign.absoluteValue
+    ): List<LogItem> {
+        val logItems = if (after != null) {
+            logsDao.getSessionLogsAfter(sessionId, perPage, after.toLong())
+        } else {
+            logsDao.getSessionLogs(sessionId, perPage)
         }
-        return PaginatedHelsItemList(
-            logItems.mapItemList(mapper),
-            page,
-            perPage,
-            totalPages
-        )
+        return logItems.mapItemList(mapper)
     }
 
     override suspend fun getById(id: String): LogItem? {

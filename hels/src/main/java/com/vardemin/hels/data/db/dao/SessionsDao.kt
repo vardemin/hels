@@ -10,6 +10,9 @@ import com.vardemin.hels.data.db.entity.SessionEntity
 
 @Dao
 internal interface SessionsDao {
+    @Query("SELECT * FROM sessions ORDER BY started DESC")
+    suspend fun getSessions(): List<SessionEntity>
+
     @Query("SELECT * FROM sessions WHERE id = :sessionId")
     suspend fun getSessionById(sessionId: String): SessionEntity
 

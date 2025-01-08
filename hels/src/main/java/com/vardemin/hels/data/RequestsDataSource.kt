@@ -10,6 +10,7 @@ import com.vardemin.hels.utils.mapItem
 import com.vardemin.hels.utils.mapItemList
 import com.vardemin.hels.utils.toLong
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.datetime.LocalDateTime
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
@@ -24,6 +25,7 @@ internal class RequestsDataSource(
     module.json,
     RequestItem.serializer()
 ) {
+    @OptIn(ExperimentalCoroutinesApi::class)
     override val coroutineContext: CoroutineContext = Dispatchers.Default.limitedParallelism(1)
     private val dao: RequestsDao by required { requestsDao }
     private val mapper: HelsRequestsMapper by required { requestsMapper }
@@ -34,14 +36,13 @@ internal class RequestsDataSource(
     }
 
     override suspend fun getPaginated(
-        sessionId: String,
         after: LocalDateTime?,
         perPage: Int
     ): List<RequestItem> {
         val items = if (after != null) {
-            dao.getSessionRequestsAfter(sessionId, perPage, after.toLong())
+            dao.getRequestsAfter(perPage, after.toLong())
         } else {
-            dao.getSessionRequests(sessionId, perPage)
+            dao.getRequests(perPage)
         }
         return items.mapItemList(liteMapper)
     }

@@ -88,4 +88,8 @@ object Hels : HServer, HLogger, HNetworkLogger {
     override fun event(title: String, message: String, properties: Map<String, String>) {
         logger.event(title, message, properties)
     }
+
+    override fun setAttributes(vararg attrs: Pair<String, String>) {
+        logger.setAttributes(*attrs)
+    }
 }

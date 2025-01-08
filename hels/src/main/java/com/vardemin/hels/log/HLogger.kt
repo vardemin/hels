@@ -32,4 +32,10 @@ interface HLogger {
      * @param properties specific to target event
      */
     fun event(title: String, message: String, properties: Map<String, String> = mapOf())
+
+    /**
+     * Set current session attributes
+     * @param attrs to set
+     */
+    fun setAttributes(vararg attrs: Pair<String, String>)
 }

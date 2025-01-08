@@ -31,14 +31,13 @@ internal class LogItemsDataSource(
     }
 
     override suspend fun getPaginated(
-        sessionId: String,
         after: LocalDateTime?,
         perPage: Int
     ): List<LogItem> {
         val logItems = if (after != null) {
-            logsDao.getSessionLogsAfter(sessionId, perPage, after.toLong())
+            logsDao.getLogsAfter(perPage, after.toLong())
         } else {
-            logsDao.getSessionLogs(sessionId, perPage)
+            logsDao.getLogs(perPage)
         }
         return logItems.mapItemList(mapper)
     }

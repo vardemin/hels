@@ -32,14 +32,13 @@ internal class EventItemsDataSource(
     }
 
     override suspend fun getPaginated(
-        sessionId: String,
         after: LocalDateTime?,
         perPage: Int
     ): List<EventItem> {
         val events = if (after != null) {
-            dao.getSessionEventsAfter(sessionId, perPage, after.toLong())
+            dao.getEventsAfter(perPage, after.toLong())
         } else {
-            dao.getSessionEvents(sessionId, perPage)
+            dao.getEvents(perPage)
         }
         return events.mapItemList(mapper)
     }

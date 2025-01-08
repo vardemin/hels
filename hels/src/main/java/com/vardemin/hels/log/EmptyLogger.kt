@@ -25,4 +25,8 @@ object EmptyLogger : HLogger {
     override fun event(title: String, message: String, properties: Map<String, String>) {
         // No op
     }
+
+    override fun setAttributes(vararg attrs: Pair<String, String>) {
+        // No op
+    }
 }

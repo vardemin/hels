@@ -54,6 +54,14 @@ internal class LoggerImpl(
         )
     }
 
+    override fun setAttributes(vararg attrs: Pair<String, String>) {
+        sessionDataSource.updateCurrentProps {
+            attrs.forEach {
+                this[it.first] = it.second
+            }
+        }
+    }
+
     private fun pushLog(
         level: LogLevel,
         tag: String,

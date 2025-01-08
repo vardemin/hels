@@ -11,11 +11,11 @@ import com.vardemin.hels.data.db.entity.RequestEntity
 
 @Dao
 internal interface RequestsDao {
-    @Query("SELECT * FROM lite_requests WHERE sessionId = :sessionId ORDER BY time DESC LIMIT :limit")
-    suspend fun getSessionRequests(sessionId: String, limit: Int): List<LiteRequestEntity>
+    @Query("SELECT * FROM lite_requests ORDER BY time DESC LIMIT :limit")
+    suspend fun getRequests(limit: Int): List<LiteRequestEntity>
 
-    @Query("SELECT * FROM lite_requests WHERE sessionId = :sessionId AND time < :last ORDER BY time DESC LIMIT :limit")
-    suspend fun getSessionRequestsAfter(sessionId: String, limit: Int, last: Long): List<LiteRequestEntity>
+    @Query("SELECT * FROM lite_requests WHERE time < :last ORDER BY time DESC LIMIT :limit")
+    suspend fun getRequestsAfter(limit: Int, last: Long): List<LiteRequestEntity>
 
     @Query("SELECT * FROM requests WHERE id = :id")
     suspend fun getRequestById(id: String): RequestEntity?

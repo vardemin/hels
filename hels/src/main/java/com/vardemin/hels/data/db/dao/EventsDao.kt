@@ -10,11 +10,11 @@ import com.vardemin.hels.data.db.entity.EventEntity
 
 @Dao
 internal interface EventsDao {
-    @Query("SELECT * FROM events WHERE sessionId = :sessionId ORDER BY dateTime DESC LIMIT :limit")
-    suspend fun getSessionEvents(sessionId: String, limit: Int): List<EventEntity>
+    @Query("SELECT * FROM events ORDER BY dateTime DESC LIMIT :limit")
+    suspend fun getEvents(limit: Int): List<EventEntity>
 
-    @Query("SELECT * FROM events WHERE sessionId = :sessionId AND dateTime < :last ORDER BY dateTime DESC LIMIT :limit")
-    suspend fun getSessionEventsAfter(sessionId: String, limit: Int, last: Long): List<EventEntity>
+    @Query("SELECT * FROM events WHERE dateTime < :last ORDER BY dateTime DESC LIMIT :limit")
+    suspend fun getEventsAfter(limit: Int, last: Long): List<EventEntity>
 
     @Query("SELECT * FROM events WHERE id = :id")
     suspend fun getEventById(id: String): EventEntity?

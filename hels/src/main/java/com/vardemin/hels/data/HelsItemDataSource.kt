@@ -39,7 +39,6 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     val operationFlow: SharedFlow<HelsOperation> = mutableOperationFlow.asSharedFlow()
 
     abstract suspend fun getPaginated(
-        sessionId: String,
         after: LocalDateTime? = null,
         perPage: Int = HELS_DEFAULT_ITEMS_PER_PAGE
     ): List<Item>
@@ -85,14 +84,14 @@ abstract class HelsItemDataSource<Item : HelsItem>(
         mutableOperationFlow.emit(HelsOperation.Reset(sessionId))
     }
 
-    public fun configureRouting(route: Route, sessionIdProvider: () -> String) {
+    public fun configureRouting(route: Route) {
         with(route) {
             get("$API_VERSION/$apiPath") {
                 runCatching {
                     val lastDate = call.request.queryParameters["last"]?.toLocalDateTime()
                     val items = call.request.queryParameters["items"]?.toIntOrNull()
                         ?: defaultItemsCount
-                    val result = getPaginated(sessionIdProvider(), lastDate, items)
+                    val result = getPaginated(lastDate, items)
                     call.respondText(
                         json.encodeToString(ListSerializer(serializer), result),
                         ContentType.Application.Json

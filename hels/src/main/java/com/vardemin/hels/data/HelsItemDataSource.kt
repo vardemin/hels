@@ -1,6 +1,7 @@
 package com.vardemin.hels.data
 
 import android.util.Log
+import com.vardemin.hels.model.HelsGenericOperation
 import com.vardemin.hels.model.HelsItem
 import com.vardemin.hels.model.HelsOperation
 import io.ktor.http.ContentType
@@ -23,6 +24,7 @@ import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 abstract class HelsItemDataSource<Item : HelsItem>(
@@ -60,14 +62,14 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     fun add(sessionId: String, item: Item) {
         launch {
             val itemToReturn = onAddItem(sessionId, item)
-            mutableOperationFlow.emit(HelsOperation.Add(sessionId, itemToReturn, serializer))
+            mutableOperationFlow.emit(HelsOperation.Add(sessionId, itemToReturn))
         }
     }
 
     fun update(sessionId: String, id: String, update: (Item) -> Item) {
         launch {
             onUpdateItem(sessionId, id, update)?.let { itemToReturn ->
-                mutableOperationFlow.emit(HelsOperation.Update(sessionId, itemToReturn, serializer))
+                mutableOperationFlow.emit(HelsOperation.Update(sessionId, itemToReturn))
             }
         }
     }
@@ -126,7 +128,11 @@ abstract class HelsItemDataSource<Item : HelsItem>(
             webSocket(wsPath) {
                 try {
                     operationFlow.collect {
-                        val jsonEncoded = it.toJson(json)
+                        val jsonEncoded = if (it is HelsGenericOperation) {
+                            it.toJson(json, serializer)
+                        } else {
+                            json.encodeToString(it)
+                        }
                         send(Frame.Text(jsonEncoded))
                     }
                 } catch (e: Exception) {

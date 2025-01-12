@@ -3,33 +3,29 @@ package com.vardemin.hels.model
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
 sealed interface HelsOperation {
     val sessionId: String
-    fun toJson(json: Json): String
+    val operation: String
 
     @Serializable
     @SerialName("reset")
     data class Reset(
-        override val sessionId: String
-    ): HelsOperation {
-        override fun toJson(json: Json): String {
-            return json.encodeToString(this)
-        }
-    }
+        override val sessionId: String,
+        override val operation: String = "reset"
+    ): HelsOperation
 
     @Serializable
     @SerialName("add")
     data class Add<Item: HelsItem>(
         override val sessionId: String,
         val data: Item,
-        val serializer: KSerializer<Item>
-    ) : HelsOperation {
-        override fun toJson(json: Json): String {
-            return json.encodeToString(Add.serializer(serializer), this)
+        override val operation: String = "add"
+    ) : HelsOperation, HelsGenericOperation {
+        override fun toJson(json: Json, serializer: KSerializer<*>): String {
+            return json.encodeToString(Add.serializer(serializer as KSerializer<Item>) ,this)
         }
     }
 
@@ -38,10 +34,10 @@ sealed interface HelsOperation {
     data class Update<Item: HelsItem>(
         override val sessionId: String,
         val data: Item,
-        val serializer: KSerializer<Item>
-    ) : HelsOperation {
-        override fun toJson(json: Json): String {
-            return json.encodeToString(Update.serializer(serializer), this)
+        override val operation: String = "update"
+    ) : HelsOperation, HelsGenericOperation {
+        override fun toJson(json: Json, serializer: KSerializer<*>): String {
+            return json.encodeToString(serializer(serializer as KSerializer<Item>) ,this)
         }
     }
 
@@ -49,11 +45,11 @@ sealed interface HelsOperation {
     @SerialName("remove")
     data class Remove(
         override val sessionId: String,
-        val id: String
-    ) : HelsOperation {
-        override fun toJson(json: Json): String {
-            return json.encodeToString(Remove.serializer(), this)
-        }
-    }
+        val id: String,
+        override val operation: String = "remove"
+    ) : HelsOperation
+}
 
+interface HelsGenericOperation {
+    fun toJson(json: Json, serializer: KSerializer<*>): String
 }

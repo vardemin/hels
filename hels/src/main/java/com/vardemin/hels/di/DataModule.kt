@@ -42,6 +42,7 @@ internal class DataModule(
         ignoreUnknownKeys = true
         coerceInputValues = true
         useAlternativeNames = true
+        encodeDefaults = true
     }
 
     val defaultCoroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Default

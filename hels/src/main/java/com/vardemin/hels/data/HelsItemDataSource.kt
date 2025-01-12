@@ -88,7 +88,8 @@ abstract class HelsItemDataSource<Item : HelsItem>(
         with(route) {
             get("$API_VERSION/$apiPath") {
                 runCatching {
-                    val lastDate = call.request.queryParameters["last"]?.toLocalDateTime()
+                    val lastDate = call.request.queryParameters["last"]?.takeIf { it.isNotEmpty() }
+                        ?.toLocalDateTime()
                     val items = call.request.queryParameters["items"]?.toIntOrNull()
                         ?: defaultItemsCount
                     val result = getPaginated(lastDate, items)

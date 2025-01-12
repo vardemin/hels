@@ -34,7 +34,7 @@ sealed interface HelsOperation {
     }
 
     @Serializable
-    @SerialName("add")
+    @SerialName("update")
     data class Update<Item: HelsItem>(
         override val sessionId: String,
         val data: Item,
@@ -46,7 +46,7 @@ sealed interface HelsOperation {
     }
 
     @Serializable
-    @SerialName("add")
+    @SerialName("remove")
     data class Remove(
         override val sessionId: String,
         val id: String

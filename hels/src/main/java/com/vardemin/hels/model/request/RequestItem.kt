@@ -1,6 +1,5 @@
 package com.vardemin.hels.model.request
 
-import androidx.room.Embedded
 import com.vardemin.hels.model.HelsItemWithSession
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
@@ -14,7 +13,6 @@ internal data class RequestItem(
     val headers: Map<String, List<String>>,
     val body: String?,
     override val time: LocalDateTime,
-    @Embedded
     val response: ResponseItem?,
     override val id: String = UUID.randomUUID().toString(),
 ) : HelsItemWithSession()

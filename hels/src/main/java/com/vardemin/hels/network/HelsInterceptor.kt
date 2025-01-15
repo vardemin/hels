@@ -13,6 +13,7 @@ import okhttp3.internal.http.promisesBody
 import okio.Buffer
 import okio.EOFException
 import java.nio.charset.Charset
+import java.util.TreeMap
 
 class HelsInterceptor(
     private val maxBodySize: Long = HELS_MAX_BODY_DEFAULT_SIZE
@@ -40,7 +41,7 @@ class HelsInterceptor(
         val requestId = Hels.logRequest(
             request.method,
             request.url.toString(),
-            headers.toMultimap(),
+            headers.toMap(),
             bodyString,
             currentDateTime()
         )
@@ -76,7 +77,7 @@ class HelsInterceptor(
         Hels.logResponse(
             requestId,
             response.code,
-            responseHeaders.toMultimap(),
+            responseHeaders.toMap(),
             responseString,
             endTime
         )
@@ -86,7 +87,7 @@ class HelsInterceptor(
     private fun bodyHasUnknownEncoding(headers: Headers): Boolean {
         val contentEncoding = headers["Content-Encoding"] ?: return false
         return !contentEncoding.equals("identity", ignoreCase = true) &&
-                !contentEncoding.equals("gzip", ignoreCase = true)
+            !contentEncoding.equals("gzip", ignoreCase = true)
     }
 
     private fun bodyIsStreaming(response: Response): Boolean {
@@ -120,6 +121,22 @@ class HelsInterceptor(
 
     private fun currentDateTime(): LocalDateTime {
         return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    }
+
+    private fun Headers.toMap(): Map<String, List<String>> {
+        val result = TreeMap<String, MutableList<String>>(String.CASE_INSENSITIVE_ORDER)
+        for (i in 0 until size) {
+            val name = name(i).lowercase()
+            var values: MutableList<String>? = result[name]
+            if (values == null) {
+                values = mutableListOf()
+                result[name] = values
+            }
+            value(i).takeIf { it.isNotBlank() }?.let {
+                values.add(it)
+            }
+        }
+        return result
     }
 
     companion object {

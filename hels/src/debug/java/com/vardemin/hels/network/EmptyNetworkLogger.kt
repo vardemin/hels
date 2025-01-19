@@ -7,7 +7,8 @@ object EmptyNetworkLogger: HNetworkLogger {
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ): String {
         // No op
@@ -18,7 +19,8 @@ object EmptyNetworkLogger: HNetworkLogger {
         requestId: String,
         code: Int,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ) {
         // No op
@@ -28,13 +30,15 @@ object EmptyNetworkLogger: HNetworkLogger {
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime,
         code: Int,
         responseHeaders: Map<String, List<String>>,
+        responseBodySize: Long,
         responseBody: String?,
         responseTime: LocalDateTime
-    ) : String {
+    ): String {
         // No op
         return ""
     }

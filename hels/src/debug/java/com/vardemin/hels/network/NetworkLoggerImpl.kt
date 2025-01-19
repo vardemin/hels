@@ -27,7 +27,8 @@ internal class NetworkLoggerImpl(
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ): String {
         val currentSessionId = sessionId
@@ -36,7 +37,8 @@ internal class NetworkLoggerImpl(
             method,
             url,
             headers,
-            body,
+            bodySize,
+            bodyString,
             time,
             null
         )
@@ -51,12 +53,13 @@ internal class NetworkLoggerImpl(
         requestId: String,
         code: Int,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ) {
         requestsDataSource.update(sessionId, requestId) {
             it.copy(
-                response = ResponseItem(code, headers, body, time)
+                response = ResponseItem(code, headers, bodySize, bodyString, time)
             )
         }
     }
@@ -65,10 +68,12 @@ internal class NetworkLoggerImpl(
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime,
         code: Int,
         responseHeaders: Map<String, List<String>>,
+        responseBodySize: Long,
         responseBody: String?,
         responseTime: LocalDateTime
     ): String {
@@ -78,11 +83,13 @@ internal class NetworkLoggerImpl(
             method,
             url,
             headers,
-            body,
+            bodySize,
+            bodyString,
             time,
             ResponseItem(
                 code,
                 responseHeaders,
+                responseBodySize,
                 responseBody,
                 responseTime
             )

@@ -11,6 +11,7 @@ internal data class RequestItem(
     val method: String,
     val url: String,
     val headers: Map<String, List<String>>,
+    val bodySize: Long,
     val body: String?,
     override val time: LocalDateTime,
     val response: ResponseItem?,
@@ -21,6 +22,7 @@ internal data class RequestItem(
 internal data class ResponseItem(
     val code: Int,
     val headers: Map<String, List<String>>,
+    val bodySize: Long,
     val body: String?,
     val time: LocalDateTime
 )

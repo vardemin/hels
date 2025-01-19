@@ -4,7 +4,6 @@ plugins {
     id 'com.google.devtools.ksp'
     id 'androidx.room'
     id 'kotlinx-serialization'
-    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -40,23 +39,23 @@ android {
 
 dependencies {
 
-    implementation "io.ktor:ktor-server-core-jvm:$ktorVersion"
-    implementation "io.ktor:ktor-server-cio:$ktorVersion"
-    implementation "io.ktor:ktor-server-websockets:$ktorVersion"
-    implementation "io.ktor:ktor-server-content-negotiation:$ktorVersion"
-    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktorVersion"
-    implementation "io.ktor:ktor-server-status-pages:$ktorVersion"
-    implementation "io.ktor:ktor-server-cors:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-core-jvm:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-cio:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-websockets:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-content-negotiation:$ktorVersion"
+    debugImplementation "io.ktor:ktor-serialization-kotlinx-json:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-status-pages:$ktorVersion"
+    debugImplementation "io.ktor:ktor-server-cors:$ktorVersion"
 
-    implementation "androidx.room:room-runtime:$roomVersion"
-    implementation "androidx.room:room-ktx:$roomVersion"
+    debugImplementation "androidx.room:room-runtime:$roomVersion"
+    debugImplementation "androidx.room:room-ktx:$roomVersion"
     ksp "androidx.room:room-compiler:$roomVersion"
 
-    implementation "net.gouline.kapsule:kapsule-core:$kapsuleVersion"
+    debugImplementation "net.gouline.kapsule:kapsule-core:$kapsuleVersion"
 
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    debugImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    debugImplementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
 
     implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
     implementation("com.squareup.okhttp3:okhttp")

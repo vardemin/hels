@@ -16,27 +16,48 @@ import com.vardemin.hels.network.NetworkLoggerImpl
 import com.vardemin.hels.networkLoggerInstance
 import com.vardemin.hels.server.ServerImpl
 import com.vardemin.hels.serverInstance
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import java.util.concurrent.Executors
 
-object HelsInitializer {
+object HelsInitializer : HelsInitActions {
     private const val FRONT_VERSION = 0
 
-    fun initBlocking(
+    private val coroutineScope: CoroutineScope
+        get() = CoroutineScope(
+            SupervisorJob() + Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+        )
+
+    override fun initBlocking(
         context: Context,
-        initProps: Map<String, String> = emptyMap(),
-        startNewSession: Boolean = true,
-        port: Int = 1515
+        initProps: Map<String, String>,
+        startNewSession: Boolean,
+        port: Int
     ) {
         runBlocking {
             init(context, initProps, startNewSession, port)
         }
     }
 
-    suspend fun init(
+    override fun initAsync(
         context: Context,
-        initProps: Map<String, String> = emptyMap(),
-        startNewSession: Boolean = true,
-        port: Int = 1515
+        initProps: Map<String, String>,
+        startNewSession: Boolean,
+        port: Int
+    ) {
+        coroutineScope.launch {
+            init(context, initProps, startNewSession, port)
+        }
+    }
+
+    override suspend fun init(
+        context: Context,
+        initProps: Map<String, String>,
+        startNewSession: Boolean,
+        port: Int
     ) {
         val frontDirectory = context.filesDir.resolve("hels_front")
         val actualFrontDirectory = HelsMigrator.migrate(context, frontDirectory, FRONT_VERSION)

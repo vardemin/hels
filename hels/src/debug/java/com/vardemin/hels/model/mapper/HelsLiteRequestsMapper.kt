@@ -15,6 +15,7 @@ internal class HelsLiteRequestsMapper : HelsMapper<LiteRequestEntity, RequestIte
                 method,
                 url,
                 headers,
+                bodySize,
                 body,
                 time.toLocalDateTime(),
                 response?.toResponseItem(),
@@ -28,6 +29,7 @@ internal class HelsLiteRequestsMapper : HelsMapper<LiteRequestEntity, RequestIte
             ResponseItem(
                 code,
                 responseHeaders,
+                responseBodySize,
                 null,
                 responseTime.toLocalDateTime()
             )

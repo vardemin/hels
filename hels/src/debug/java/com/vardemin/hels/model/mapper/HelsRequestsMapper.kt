@@ -16,6 +16,7 @@ internal class HelsRequestsMapper: HelsMapper<RequestEntity, RequestItem> {
                 method,
                 url,
                 headers,
+                bodySize,
                 body,
                 time.toLocalDateTime(),
                 response?.toResponseItem(),
@@ -29,6 +30,7 @@ internal class HelsRequestsMapper: HelsMapper<RequestEntity, RequestItem> {
             ResponseItem(
                 code,
                 responseHeaders,
+                responseBodySize,
                 responseBody,
                 responseTime.toLocalDateTime()
             )
@@ -43,6 +45,7 @@ internal class HelsRequestsMapper: HelsMapper<RequestEntity, RequestItem> {
                 method,
                 url,
                 headers,
+                bodySize,
                 body,
                 time.toLong(),
                 response?.toResponseEntity()
@@ -55,6 +58,7 @@ internal class HelsRequestsMapper: HelsMapper<RequestEntity, RequestItem> {
             ResponseEntity(
                 code,
                 headers,
+                bodySize,
                 body,
                 time.toLong()
             )

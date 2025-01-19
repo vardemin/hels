@@ -12,6 +12,7 @@ internal data class RequestEntity(
     val method: String,
     val url: String,
     val headers: Map<String, List<String>>,
+    val bodySize: Long,
     val body: String?,
     val time: Long,
     @Embedded
@@ -21,6 +22,7 @@ internal data class RequestEntity(
 internal data class ResponseEntity(
     val code: Int,
     val responseHeaders: Map<String, List<String>>,
+    val responseBodySize: Long,
     val responseBody: String?,
     val responseTime: Long
 )

@@ -8,7 +8,7 @@ import com.vardemin.hels.server.EmptyServer
 import com.vardemin.hels.server.HServer
 import kotlinx.datetime.LocalDateTime
 
-object Hels : HServer, HLogger, HNetworkLogger {
+object Hels : HelsFacade {
     private val logger: HLogger get() = loggerInstance ?: EmptyLogger
     private val networkLogger: HNetworkLogger get() = networkLoggerInstance ?: EmptyNetworkLogger
     private val server: HServer get() = serverInstance ?: EmptyServer
@@ -25,30 +25,34 @@ object Hels : HServer, HLogger, HNetworkLogger {
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ): String {
-        return networkLogger.logRequest(method, url, headers, body, time)
+        return networkLogger.logRequest(method, url, headers, bodySize, bodyString, time)
     }
 
     override fun logResponse(
         requestId: String,
         code: Int,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime
     ) {
-        networkLogger.logResponse(requestId, code, headers, body, time)
+        networkLogger.logResponse(requestId, code, headers, bodySize, bodyString, time)
     }
 
     override fun logFullRequest(
         method: String,
         url: String,
         headers: Map<String, List<String>>,
-        body: String?,
+        bodySize: Long,
+        bodyString: String?,
         time: LocalDateTime,
         code: Int,
         responseHeaders: Map<String, List<String>>,
+        responseBodySize: Long,
         responseBody: String?,
         responseTime: LocalDateTime
     ): String {
@@ -56,10 +60,12 @@ object Hels : HServer, HLogger, HNetworkLogger {
             method,
             url,
             headers,
-            body,
+            bodySize,
+            bodyString,
             time,
             code,
             responseHeaders,
+            responseBodySize,
             responseBody,
             responseTime
         )

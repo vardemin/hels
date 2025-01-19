@@ -12,6 +12,7 @@ import okhttp3.Response
 import okhttp3.internal.http.promisesBody
 import okio.Buffer
 import okio.EOFException
+import okio.GzipSource
 import java.nio.charset.Charset
 import java.util.TreeMap
 
@@ -24,16 +25,26 @@ class HelsInterceptor(
         val requestBody = request.body
         val headers = request.headers
         var bodyString: String? = null
+        var totalRequestBodySize = 0L
         if (requestBody != null &&
-            requestBody.contentLength() in 1..maxBodySize &&
             !bodyHasUnknownEncoding(request.headers) &&
             !requestBody.isDuplex() &&
-            !requestBody.isOneShot() &&
-            !"gzip".equals(headers["Content-Encoding"], ignoreCase = true)
+            !requestBody.isOneShot()
         ) {
-            val buffer = Buffer()
+            var buffer = Buffer()
             requestBody.writeTo(buffer)
-            if (!buffer.isProbablyUtf8()) {
+
+            if ("gzip".equals(headers["Content-Encoding"], ignoreCase = true)) {
+                GzipSource(buffer).use { gzippedResponseBody ->
+                    buffer = Buffer()
+                    buffer.writeAll(gzippedResponseBody)
+                }
+                totalRequestBodySize = buffer.size
+            } else {
+                totalRequestBodySize = requestBody.contentLength()
+            }
+
+            if (buffer.isProbablyUtf8() && buffer.size in 1..maxBodySize) {
                 val charset: Charset = requestBody.contentType().charsetOrUtf8()
                 bodyString = buffer.readString(charset)
             }
@@ -42,6 +53,7 @@ class HelsInterceptor(
             request.method,
             request.url.toString(),
             headers.toMap(),
+            maxOf(totalRequestBodySize, 0L),
             bodyString,
             currentDateTime()
         )
@@ -56,20 +68,25 @@ class HelsInterceptor(
         val endTime = currentDateTime()
         val responseHeaders = response.headers
         val responseBody = response.body!!
-        val contentLength = responseBody.contentLength()
-
+        var totalResponseBodySize = responseBody.contentLength()
         var responseString: String? = null
         if (response.promisesBody() &&
-            !bodyHasUnknownEncoding(response.headers) &&
-            !bodyIsStreaming(response) &&
-            !"gzip".equals(responseHeaders["Content-Encoding"], ignoreCase = true)
+            !bodyHasUnknownEncoding(responseHeaders) &&
+            !bodyIsStreaming(response)
         ) {
             val source = responseBody.source()
             source.request(Long.MAX_VALUE) // Buffer the entire body.
-            val buffer = source.buffer
+            var buffer = source.buffer
 
+            if ("gzip".equals(responseHeaders["Content-Encoding"], ignoreCase = true)) {
+                GzipSource(buffer.clone()).use { gzippedResponseBody ->
+                    buffer = Buffer()
+                    buffer.writeAll(gzippedResponseBody)
+                }
+            }
+            totalResponseBodySize = buffer.size
 
-            if (contentLength in 1..maxBodySize) {
+            if (buffer.isProbablyUtf8() && totalResponseBodySize in 1..maxBodySize) {
                 val charset: Charset = responseBody.contentType().charsetOrUtf8()
                 responseString = buffer.clone().readString(charset)
             }
@@ -78,6 +95,7 @@ class HelsInterceptor(
             requestId,
             response.code,
             responseHeaders.toMap(),
+            maxOf(totalResponseBodySize, 0L),
             responseString,
             endTime
         )

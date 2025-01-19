@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "3018f7c5f6175b10c6cd63be91e612ef",
+    "identityHash": "8a8becfa70bcc24d4ed6077a03e8ee26",
     "entities": [
       {
         "tableName": "sessions",
@@ -88,7 +88,7 @@
       },
       {
         "tableName": "requests",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sessionId` TEXT NOT NULL, `method` TEXT NOT NULL, `url` TEXT NOT NULL, `headers` TEXT NOT NULL, `body` TEXT, `time` INTEGER NOT NULL, `code` INTEGER, `responseHeaders` TEXT, `responseBody` TEXT, `responseTime` INTEGER, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `sessionId` TEXT NOT NULL, `method` TEXT NOT NULL, `url` TEXT NOT NULL, `headers` TEXT NOT NULL, `bodySize` INTEGER NOT NULL, `body` TEXT, `time` INTEGER NOT NULL, `code` INTEGER, `responseHeaders` TEXT, `responseBodySize` INTEGER, `responseBody` TEXT, `responseTime` INTEGER, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -121,6 +121,12 @@
             "notNull": true
           },
           {
+            "fieldPath": "bodySize",
+            "columnName": "bodySize",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
             "fieldPath": "body",
             "columnName": "body",
             "affinity": "TEXT",
@@ -142,6 +148,12 @@
             "fieldPath": "response.responseHeaders",
             "columnName": "responseHeaders",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "response.responseBodySize",
+            "columnName": "responseBodySize",
+            "affinity": "INTEGER",
             "notNull": false
           },
           {
@@ -220,12 +232,12 @@
     "views": [
       {
         "viewName": "lite_requests",
-        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT id, sessionId, method, url, headers, body, time, code, responseHeaders, responseTime FROM requests"
+        "createSql": "CREATE VIEW `${VIEW_NAME}` AS SELECT id, sessionId, method, url, headers, bodySize, body, time, code, responseHeaders, responseBodySize, responseTime FROM requests"
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '3018f7c5f6175b10c6cd63be91e612ef')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8a8becfa70bcc24d4ed6077a03e8ee26')"
     ]
   }
 }

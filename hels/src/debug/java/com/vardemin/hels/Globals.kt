@@ -1,9 +1,10 @@
 package com.vardemin.hels
 
-import com.vardemin.hels.log.HLogger
-import com.vardemin.hels.network.HNetworkLogger
+import com.vardemin.hels.command.InternalCommandHandler
+import com.vardemin.hels.log.LoggerCommand
+import com.vardemin.hels.network.NetworkLoggerCommand
 import com.vardemin.hels.server.HServer
 
 internal var serverInstance: HServer? = null
-internal var loggerInstance: HLogger? = null
-internal var networkLoggerInstance: HNetworkLogger? = null
+internal var loggerInstance: InternalCommandHandler<LoggerCommand>? = null
+internal var networkLoggerInstance: InternalCommandHandler<NetworkLoggerCommand>? = null

@@ -8,6 +8,7 @@ import com.vardemin.hels.utils.mapEntity
 import com.vardemin.hels.utils.mapItem
 import com.vardemin.hels.utils.mapItemList
 import com.vardemin.hels.utils.toLong
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.LocalDateTime
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
@@ -23,7 +24,7 @@ internal class EventItemsDataSource(
     EventItem.serializer()
 ) {
 
-    override val coroutineContext: CoroutineContext by required { defaultCoroutineContext }
+    override val scope: CoroutineScope by required { defaultScope }
     private val dao: EventsDao by required { eventsDao }
     private val mapper: HelsEventsMapper by required { eventsMapper }
 

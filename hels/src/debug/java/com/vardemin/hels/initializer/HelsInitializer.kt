@@ -9,10 +9,10 @@ import com.vardemin.hels.data.SessionDataSource.Companion.SESSION_PROP_DEVICE
 import com.vardemin.hels.data.SessionDataSource.Companion.SESSION_PROP_OS
 import com.vardemin.hels.di.ComponentsModule
 import com.vardemin.hels.di.DataModule
-import com.vardemin.hels.log.LoggerImpl
+import com.vardemin.hels.log.LoggerCommandHandler
 import com.vardemin.hels.loggerInstance
 import com.vardemin.hels.migration.HelsMigrator
-import com.vardemin.hels.network.NetworkLoggerImpl
+import com.vardemin.hels.network.NetworkLoggerCommandHandler
 import com.vardemin.hels.networkLoggerInstance
 import com.vardemin.hels.server.ServerImpl
 import com.vardemin.hels.serverInstance
@@ -76,8 +76,8 @@ object HelsInitializer : HelsInitActions {
         } else {
             componentsModule.sessionDataSource.applyLastSession(finalProps)
         }
-        loggerInstance = LoggerImpl(componentsModule)
-        networkLoggerInstance = NetworkLoggerImpl(componentsModule)
+        loggerInstance = LoggerCommandHandler(componentsModule)
+        networkLoggerInstance = NetworkLoggerCommandHandler(componentsModule)
         serverInstance = ServerImpl(componentsModule)
         Hels.start()
     }

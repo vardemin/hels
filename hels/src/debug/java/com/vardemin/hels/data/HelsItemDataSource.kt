@@ -32,8 +32,8 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     val wsPath: String,
     val json: Json,
     val serializer: KSerializer<Item>
-) : CoroutineScope {
-
+) {
+    abstract val scope: CoroutineScope
     open val defaultItemsCount: Int = HELS_DEFAULT_ITEMS_PER_PAGE
 
     protected val mutableOperationFlow: MutableSharedFlow<HelsOperation> =
@@ -60,14 +60,14 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     protected abstract suspend fun onReset(sessionId: String)
 
     fun add(sessionId: String, item: Item) {
-        launch {
+        scope.launch {
             val itemToReturn = onAddItem(sessionId, item)
             mutableOperationFlow.emit(HelsOperation.Add(sessionId, itemToReturn))
         }
     }
 
     fun update(sessionId: String, id: String, update: (Item) -> Item) {
-        launch {
+        scope.launch {
             onUpdateItem(sessionId, id, update)?.let { itemToReturn ->
                 mutableOperationFlow.emit(HelsOperation.Update(sessionId, itemToReturn))
             }
@@ -75,7 +75,7 @@ abstract class HelsItemDataSource<Item : HelsItem>(
     }
 
     fun remove(sessionId: String, id: String) {
-        launch {
+        scope.launch {
             onRemoveItem(sessionId, id)
             mutableOperationFlow.emit(HelsOperation.Remove(sessionId, id))
         }

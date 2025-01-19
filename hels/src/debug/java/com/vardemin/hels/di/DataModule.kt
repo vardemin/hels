@@ -9,6 +9,7 @@ import com.vardemin.hels.model.mapper.HelsLiteRequestsMapper
 import com.vardemin.hels.model.mapper.HelsLogsMapper
 import com.vardemin.hels.model.mapper.HelsRequestsMapper
 import com.vardemin.hels.model.mapper.HelsSessionMapper
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.serialization.json.Json
@@ -46,4 +47,5 @@ internal class DataModule(
     }
 
     val defaultCoroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Default
+    val defaultScope: CoroutineScope = CoroutineScope(defaultCoroutineContext)
 }

@@ -1,16 +1,16 @@
 package com.vardemin.hels
 
-import com.vardemin.hels.log.EmptyLogger
 import com.vardemin.hels.log.HLogger
-import com.vardemin.hels.network.EmptyNetworkLogger
+import com.vardemin.hels.log.LogsEmitter
+import com.vardemin.hels.network.NetworkLogsEmitter
 import com.vardemin.hels.network.HNetworkLogger
 import com.vardemin.hels.server.EmptyServer
 import com.vardemin.hels.server.HServer
 import kotlinx.datetime.LocalDateTime
 
 object Hels : HelsFacade {
-    private val logger: HLogger get() = loggerInstance ?: EmptyLogger
-    private val networkLogger: HNetworkLogger get() = networkLoggerInstance ?: EmptyNetworkLogger
+    private val logger: HLogger = LogsEmitter
+    private val networkLogger: HNetworkLogger = NetworkLogsEmitter
     private val server: HServer get() = serverInstance ?: EmptyServer
 
     override fun start() {

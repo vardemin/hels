@@ -9,6 +9,7 @@ import com.vardemin.hels.utils.mapEntity
 import com.vardemin.hels.utils.mapItem
 import com.vardemin.hels.utils.mapItemList
 import com.vardemin.hels.utils.toLong
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.datetime.LocalDateTime
@@ -24,9 +25,10 @@ internal class RequestsDataSource(
     "/ws/requests",
     module.json,
     RequestItem.serializer()
-) {
+), CoroutineScope {
     @OptIn(ExperimentalCoroutinesApi::class)
     override val coroutineContext: CoroutineContext = Dispatchers.Default.limitedParallelism(1)
+    override val scope: CoroutineScope = this
     private val dao: RequestsDao by required { requestsDao }
     private val mapper: HelsRequestsMapper by required { requestsMapper }
     private val liteMapper: HelsLiteRequestsMapper by required { requestsLiteMapper }

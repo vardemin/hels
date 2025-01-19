@@ -1,36 +1,88 @@
 package com.vardemin.hels.network
 
+import android.util.Log
+import com.vardemin.hels.command.InternalCommandHandler
 import com.vardemin.hels.data.RequestsDataSource
 import com.vardemin.hels.data.SessionDataSource
 import com.vardemin.hels.di.ComponentsModule
 import com.vardemin.hels.model.request.RequestItem
 import com.vardemin.hels.model.request.ResponseItem
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.datetime.LocalDateTime
 import net.gouline.kapsule.Injects
 import net.gouline.kapsule.inject
 import net.gouline.kapsule.required
 
-internal class NetworkLoggerImpl(
+internal class NetworkLoggerCommandHandler(
     module: ComponentsModule
-) : Injects<ComponentsModule>, HNetworkLogger {
+) : Injects<ComponentsModule>, InternalCommandHandler<NetworkLoggerCommand> {
 
     private val sessionDataSource: SessionDataSource by required { sessionDataSource }
     private val requestsDataSource: RequestsDataSource by required { requestsDataSource }
-
+    private val scope: CoroutineScope by required { dataModule.defaultScope }
     private val sessionId: String get() = sessionDataSource.currentSession?.id ?: ""
 
     init {
         inject(module)
+        NetworkLogsEmitter.commandFlow.onEach {
+            handle(it)
+        }.catch {
+            Log.e("HELS", it.localizedMessage, it)
+        }.launchIn(scope)
     }
 
-    override fun logRequest(
+    override fun handle(command: NetworkLoggerCommand) {
+        with(command) {
+            when (this) {
+                is NetworkLoggerCommand.LogFullRequest -> logFullRequest(
+                    id,
+                    method,
+                    url,
+                    headers,
+                    bodySize,
+                    bodyString,
+                    time,
+                    code,
+                    responseHeaders,
+                    responseBodySize,
+                    responseBody,
+                    responseTime
+                )
+
+                is NetworkLoggerCommand.LogRequest -> logRequest(
+                    id,
+                    method,
+                    url,
+                    headers,
+                    bodySize,
+                    bodyString,
+                    time,
+                )
+
+                is NetworkLoggerCommand.LogResponse -> logResponse(
+                    requestId,
+                    code,
+                    headers,
+                    bodySize,
+                    bodyString,
+                    time
+                )
+            }
+        }
+    }
+
+    private fun logRequest(
+        id: String,
         method: String,
         url: String,
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
         time: LocalDateTime
-    ): String {
+    ) {
         val currentSessionId = sessionId
         val requestItem = RequestItem(
             currentSessionId,
@@ -40,16 +92,16 @@ internal class NetworkLoggerImpl(
             bodySize,
             bodyString,
             time,
-            null
+            null,
+            id
         )
         requestsDataSource.add(
             currentSessionId,
             requestItem
         )
-        return requestItem.id
     }
 
-    override fun logResponse(
+    private fun logResponse(
         requestId: String,
         code: Int,
         headers: Map<String, List<String>>,
@@ -64,7 +116,8 @@ internal class NetworkLoggerImpl(
         }
     }
 
-    override fun logFullRequest(
+    private fun logFullRequest(
+        id: String,
         method: String,
         url: String,
         headers: Map<String, List<String>>,
@@ -76,7 +129,7 @@ internal class NetworkLoggerImpl(
         responseBodySize: Long,
         responseBody: String?,
         responseTime: LocalDateTime
-    ): String {
+    ) {
         val currentSessionId = sessionId
         val item = RequestItem(
             currentSessionId,
@@ -92,9 +145,9 @@ internal class NetworkLoggerImpl(
                 responseBodySize,
                 responseBody,
                 responseTime
-            )
+            ),
+            id
         )
         requestsDataSource.add(currentSessionId, item)
-        return item.id
     }
 }

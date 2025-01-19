@@ -53,7 +53,11 @@ fun InputScreen() {
         }
         Button(
             onClick = {
-                Hels.event(titleState, bodyState)
+                Hels.event(titleState, bodyState, mapOf(
+                    "blabla" to "bblabla",
+                    "device" to "12312312312321",
+                    "code" to "code"
+                ))
             }
         ) {
             Text(text = "Log event")

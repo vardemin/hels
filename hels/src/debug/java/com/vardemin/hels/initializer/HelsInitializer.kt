@@ -2,9 +2,7 @@ package com.vardemin.hels.initializer
 
 import android.content.Context
 import android.os.Build
-import android.provider.Settings
 import com.vardemin.hels.Hels
-import com.vardemin.hels.data.SessionDataSource.Companion.SESSION_DEVICE_ID
 import com.vardemin.hels.data.SessionDataSource.Companion.SESSION_PROP_DEVICE
 import com.vardemin.hels.data.SessionDataSource.Companion.SESSION_PROP_OS
 import com.vardemin.hels.di.ComponentsModule
@@ -24,7 +22,7 @@ import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 
 object HelsInitializer : HelsInitActions {
-    private const val FRONT_VERSION = 0
+    private const val FRONT_VERSION = 1
 
     private val coroutineScope: CoroutineScope
         get() = CoroutineScope(
@@ -65,11 +63,7 @@ object HelsInitializer : HelsInitActions {
         val componentsModule = ComponentsModule(dataModule)
         val finalProps = initProps + mapOf(
             SESSION_PROP_DEVICE to ("${Build.MANUFACTURER} ${Build.MODEL}"),
-            SESSION_PROP_OS to ("Android ${Build.VERSION.RELEASE}"),
-            SESSION_DEVICE_ID to Settings.Secure.getString(
-                context.contentResolver,
-                Settings.Secure.ANDROID_ID
-            )
+            SESSION_PROP_OS to ("Android ${Build.VERSION.RELEASE}")
         )
         if (startNewSession) {
             componentsModule.sessionDataSource.startNewSession(finalProps)

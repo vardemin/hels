@@ -13,6 +13,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.vardemin.hels.ui.NetworkClient
+import java.time.LocalDateTime
+import java.util.Date
+import java.util.UUID
 
 @Composable
 fun InputScreen() {
@@ -54,9 +57,9 @@ fun InputScreen() {
         Button(
             onClick = {
                 Hels.event(titleState, bodyState, mapOf(
-                    "blabla" to "bblabla",
-                    "device" to "12312312312321",
-                    "code" to "code"
+                    "time" to Date().toString(),
+                    "userId" to UUID.randomUUID().toString(),
+                    "code" to "123"
                 ))
             }
         ) {

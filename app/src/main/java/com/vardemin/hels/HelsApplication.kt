@@ -9,7 +9,7 @@ class HelsApplication: Application() {
 
     override fun onCreate() {
         super.onCreate()
-        HelsInitializer.initBlocking(this, mapOf(
+        HelsInitializer.initAsync(this, mapOf(
             "version" to "23.4.1",
             "version_code" to Random.nextInt(200..1000).toString()
         ))

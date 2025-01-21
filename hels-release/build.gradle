@@ -7,13 +7,12 @@ plugins {
 }
 
 android {
-    namespace 'com.vardemin.hels'
+    namespace 'com.vardemin.hels.release'
     compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
         minSdk rootProject.minSdkVersion
         targetSdk rootProject.compileSdkVersion
-
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -33,10 +32,13 @@ android {
 }
 
 dependencies {
+    api project(":hels")
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
+    implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
+    implementation("com.squareup.okhttp3:okhttp")
 }
 
 mavenPublishing {
     configure(new AndroidSingleVariantLibrary("release", true, true))
-    coordinates("io.github.vardemin", "hels-core", rootProject.currentVersion)
+    coordinates("io.github.vardemin", "hels-release", rootProject.currentVersion)
 }

@@ -1,7 +1,7 @@
 package com.vardemin.hels.migration
 
 import android.content.Context
-import com.vardemin.hels.R
+import com.vardemin.hels.full.R
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream

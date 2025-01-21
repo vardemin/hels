@@ -15,3 +15,5 @@ dependencyResolutionManagement {
 rootProject.name = "hels"
 include ':app'
 include ':hels'
+include ':hels-release'
+include ':hels-full'

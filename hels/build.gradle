@@ -1,18 +1,19 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+
 plugins {
     id 'com.android.library'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlinx-serialization'
+    id "com.vanniktech.maven.publish" version "${mavenPublishVersion}"
 }
 
 android {
     namespace 'com.vardemin.hels'
-    compileSdk 33
+    compileSdk rootProject.compileSdkVersion
 
     defaultConfig {
-        minSdk 24
-        targetSdk 33
+        minSdk rootProject.minSdkVersion
+        targetSdk rootProject.compileSdkVersion
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles "consumer-rules.pro"
     }
 
@@ -32,19 +33,10 @@ android {
 }
 
 dependencies {
-
-    implementation 'androidx.core:core-ktx:1.10.1'
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.9.0'
-
-    implementation "io.ktor:ktor-server-core-jvm:$ktorVersion"
-    implementation "io.ktor:ktor-server-cio:$ktorVersion"
-
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
     implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
-    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
+}
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+mavenPublishing {
+    configure(new AndroidSingleVariantLibrary("release", true, true))
+    coordinates("io.github.vardemin", "hels-core", rootProject.currentVersion)
 }

@@ -1,0 +1,68 @@
+import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
+
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.devtools.ksp'
+    id 'androidx.room'
+    id 'kotlinx-serialization'
+    id "com.vanniktech.maven.publish" version "${mavenPublishVersion}"
+}
+
+android {
+    namespace 'com.vardemin.hels.full'
+    compileSdk rootProject.compileSdkVersion
+
+    defaultConfig {
+        minSdk rootProject.minSdkVersion
+        targetSdk rootProject.compileSdkVersion
+        consumerProguardFiles "consumer-rules.pro"
+    }
+
+    room {
+        schemaDirectory "$projectDir/schemas"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+}
+
+dependencies {
+    api project(":hels")
+    implementation "io.ktor:ktor-server-core-jvm:$ktorVersion"
+    implementation "io.ktor:ktor-server-cio:$ktorVersion"
+    implementation "io.ktor:ktor-server-websockets:$ktorVersion"
+    implementation "io.ktor:ktor-server-content-negotiation:$ktorVersion"
+    implementation "io.ktor:ktor-serialization-kotlinx-json:$ktorVersion"
+    implementation "io.ktor:ktor-server-status-pages:$ktorVersion"
+    implementation "io.ktor:ktor-server-cors:$ktorVersion"
+
+    implementation "androidx.room:room-runtime:$roomVersion"
+    implementation "androidx.room:room-ktx:$roomVersion"
+    ksp "androidx.room:room-compiler:$roomVersion"
+
+    implementation "net.gouline.kapsule:kapsule-core:$kapsuleVersion"
+
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationVersion"
+    implementation "org.jetbrains.kotlinx:kotlinx-datetime:$dateTimeVersion"
+
+    implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
+    implementation("com.squareup.okhttp3:okhttp")
+}
+
+mavenPublishing {
+    configure(new AndroidSingleVariantLibrary("release", true, true))
+    coordinates("io.github.vardemin", "hels-full", rootProject.currentVersion)
+}

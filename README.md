@@ -104,7 +104,7 @@ information about device and session, if all works ok.
 ### Events screen
 ![Screenshot of events screen](/screenshots/screen3.png)
 ### Requests screen
-![Screenshot of events screen](/screenshots/screen3.png)
+![Screenshot of events screen](/screenshots/screen4.png)
 
 ## Example App
 Located in 'app' module.

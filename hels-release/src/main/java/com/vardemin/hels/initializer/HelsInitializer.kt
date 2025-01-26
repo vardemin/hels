@@ -2,30 +2,24 @@ package com.vardemin.hels.initializer
 
 import android.content.Context
 
-object HelsInitializer : HelsInitActions {
-    override fun initBlocking(
+object HelsInitializer {
+    fun initBlocking(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         // No op
     }
 
-    override fun initAsync(
+    fun initAsync(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         // No op
     }
 
-    override suspend fun init(
+    suspend fun init(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         // No op
     }

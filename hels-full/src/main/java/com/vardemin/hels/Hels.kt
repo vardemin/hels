@@ -6,7 +6,6 @@ import com.vardemin.hels.network.NetworkLogsEmitter
 import com.vardemin.hels.network.HNetworkLogger
 import com.vardemin.hels.server.EmptyServer
 import com.vardemin.hels.server.HServer
-import kotlinx.datetime.LocalDateTime
 
 object Hels : HelsFacade {
     private val logger: HLogger = LogsEmitter
@@ -27,7 +26,7 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ): String {
         return networkLogger.logRequest(method, url, headers, bodySize, bodyString, time)
     }
@@ -38,7 +37,7 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ) {
         networkLogger.logResponse(requestId, code, headers, bodySize, bodyString, time)
     }
@@ -49,12 +48,12 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime,
+        time: Long,
         code: Int,
         responseHeaders: Map<String, List<String>>,
         responseBodySize: Long,
         responseBody: String?,
-        responseTime: LocalDateTime
+        responseTime: Long
     ): String {
         return networkLogger.logFullRequest(
             method,

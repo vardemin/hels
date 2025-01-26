@@ -2,7 +2,6 @@ package com.vardemin.hels.network
 
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.datetime.LocalDateTime
 import java.util.UUID
 
 internal object NetworkLogsEmitter : HNetworkLogger {
@@ -22,7 +21,7 @@ internal object NetworkLogsEmitter : HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ): String {
         val id = UUID.randomUUID().toString()
         mutableCommandFlow.tryEmit(
@@ -39,7 +38,7 @@ internal object NetworkLogsEmitter : HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ) {
         mutableCommandFlow.tryEmit(
             NetworkLoggerCommand.LogResponse(
@@ -54,12 +53,12 @@ internal object NetworkLogsEmitter : HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime,
+        time: Long,
         code: Int,
         responseHeaders: Map<String, List<String>>,
         responseBodySize: Long,
         responseBody: String?,
-        responseTime: LocalDateTime
+        responseTime: Long
     ): String {
         val id = UUID.randomUUID().toString()
         mutableCommandFlow.tryEmit(

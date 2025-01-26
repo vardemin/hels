@@ -1,5 +1,6 @@
 package com.vardemin.hels.ui
 
+import com.vardemin.hels.Hels
 import com.vardemin.hels.network.HelsInterceptor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,7 +18,7 @@ object NetworkClient {
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(HttpLoggingInterceptor())
-            .addInterceptor(HelsInterceptor())
+            .addInterceptor(HelsInterceptor(Hels, true))
             .build()
     }
 

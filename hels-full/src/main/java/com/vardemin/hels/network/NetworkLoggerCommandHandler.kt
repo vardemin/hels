@@ -7,6 +7,7 @@ import com.vardemin.hels.data.SessionDataSource
 import com.vardemin.hels.di.ComponentsModule
 import com.vardemin.hels.model.request.RequestItem
 import com.vardemin.hels.model.request.ResponseItem
+import com.vardemin.hels.utils.toLocalDateTime
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
@@ -44,12 +45,12 @@ internal class NetworkLoggerCommandHandler(
                     headers,
                     bodySize,
                     bodyString,
-                    time,
+                    time.toLocalDateTime(),
                     code,
                     responseHeaders,
                     responseBodySize,
                     responseBody,
-                    responseTime
+                    time.toLocalDateTime()
                 )
 
                 is NetworkLoggerCommand.LogRequest -> logRequest(
@@ -59,7 +60,7 @@ internal class NetworkLoggerCommandHandler(
                     headers,
                     bodySize,
                     bodyString,
-                    time,
+                    time.toLocalDateTime(),
                 )
 
                 is NetworkLoggerCommand.LogResponse -> logResponse(
@@ -68,7 +69,7 @@ internal class NetworkLoggerCommandHandler(
                     headers,
                     bodySize,
                     bodyString,
-                    time
+                    time.toLocalDateTime()
                 )
             }
         }

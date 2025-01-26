@@ -12,10 +12,12 @@ import java.util.zip.ZipInputStream
 internal object HelsMigrator {
 
     private const val KEY_FRONT_VERSION = "hels_front_version"
+    private const val KEY_CUSTOM_FRONT_VERSION = "hels_custom_front_version"
 
-    fun migrate(context: Context, directory: File, version: Int): File {
+    fun migrate(context: Context, directory: File, version: Int, custom: Boolean): File {
         val sharedPreferences = context.getSharedPreferences("hels", Context.MODE_PRIVATE)
-        val previousVersion = sharedPreferences.getInt(KEY_FRONT_VERSION, -1)
+        val frontPrefsKey = if (custom) KEY_CUSTOM_FRONT_VERSION else KEY_FRONT_VERSION
+        val previousVersion = sharedPreferences.getInt(frontPrefsKey, -1)
         return if (previousVersion != version) {
             directory.deleteRecursively()
             val targetDir = directory.resolve("front_$version")
@@ -24,7 +26,7 @@ internal object HelsMigrator {
                 targetDir.mkdir()
             }
             unpackFrontendFiles(context, targetDir)
-            sharedPreferences.edit().putInt(KEY_FRONT_VERSION, version).apply()
+            sharedPreferences.edit().putInt(frontPrefsKey, version).apply()
             targetDir
         } else directory.resolve("front_$version")
     }

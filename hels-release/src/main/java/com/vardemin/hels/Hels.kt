@@ -1,7 +1,5 @@
 package com.vardemin.hels
 
-import kotlinx.datetime.LocalDateTime
-
 object Hels : HelsFacade {
     override fun start() {
         // No op
@@ -45,7 +43,7 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ): String {
         // No op
         return ""
@@ -57,7 +55,7 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     ) {
         // No op
     }
@@ -68,12 +66,12 @@ object Hels : HelsFacade {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime,
+        time: Long,
         code: Int,
         responseHeaders: Map<String, List<String>>,
         responseBodySize: Long,
         responseBody: String?,
-        responseTime: LocalDateTime
+        responseTime: Long
     ): String {
         // No op
         return ""

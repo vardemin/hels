@@ -1,7 +1,6 @@
 package com.vardemin.hels.network
 
 import com.vardemin.hels.utils.utf8Size
-import kotlinx.datetime.LocalDateTime
 
 interface HNetworkLogger {
     /**
@@ -20,7 +19,7 @@ interface HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime,
+        time: Long,
     ): String
 
     /**
@@ -38,7 +37,7 @@ interface HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime
+        time: Long
     )
 
     /**
@@ -62,12 +61,12 @@ interface HNetworkLogger {
         headers: Map<String, List<String>>,
         bodySize: Long,
         bodyString: String?,
-        time: LocalDateTime,
+        time: Long,
         code: Int,
         responseHeaders: Map<String, List<String>>,
         responseBodySize: Long,
         responseBody: String?,
-        responseTime: LocalDateTime
+        responseTime: Long
     ): String
 
     /**
@@ -80,7 +79,7 @@ interface HNetworkLogger {
     fun logRequestError(
         requestId: String,
         errorMessage: String,
-        time: LocalDateTime,
+        time: Long,
         code: Int = UNKNOWN_ERROR_CODE
     ) {
         logResponse(requestId, code, mapOf(), errorMessage.utf8Size(), errorMessage, time)

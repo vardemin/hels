@@ -21,51 +21,52 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.util.concurrent.Executors
 
-object HelsInitializer : HelsInitActions {
-    private const val FRONT_VERSION = 1
+object HelsInitializer {
+    private const val FRONT_VERSION = 2
 
     private val coroutineScope: CoroutineScope
         get() = CoroutineScope(
             SupervisorJob() + Executors.newSingleThreadExecutor().asCoroutineDispatcher()
         )
 
-    override fun initBlocking(
+    fun initBlocking(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         runBlocking {
-            init(context, initProps, startNewSession, port)
+            init(context, config)
         }
     }
 
-    override fun initAsync(
+    fun initAsync(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         coroutineScope.launch {
-            init(context, initProps, startNewSession, port)
+            init(context, config)
         }
     }
 
-    override suspend fun init(
+    suspend fun init(
         context: Context,
-        initProps: Map<String, String>,
-        startNewSession: Boolean,
-        port: Int
+        config: HelsConfiguration
     ) {
         val frontDirectory = context.filesDir.resolve("hels_front")
-        val actualFrontDirectory = HelsMigrator.migrate(context, frontDirectory, FRONT_VERSION)
-        val dataModule = DataModule(context, port, actualFrontDirectory)
+        // choose internal front version on custom
+        val frontVersion = config.customFrontendVersion ?: FRONT_VERSION
+        val actualFrontDirectory = HelsMigrator.migrate(
+            context,
+            frontDirectory,
+            frontVersion,
+            config.customFrontendVersion != null
+        )
+        val dataModule = DataModule(context, config.port, actualFrontDirectory)
         val componentsModule = ComponentsModule(dataModule)
-        val finalProps = initProps + mapOf(
+        val finalProps = config.initialProperties + mapOf(
             SESSION_PROP_DEVICE to ("${Build.MANUFACTURER} ${Build.MODEL}"),
             SESSION_PROP_OS to ("Android ${Build.VERSION.RELEASE}")
         )
-        if (startNewSession) {
+        if (config.startNewSession) {
             componentsModule.sessionDataSource.startNewSession(finalProps)
         } else {
             componentsModule.sessionDataSource.applyLastSession(finalProps)

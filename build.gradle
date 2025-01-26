@@ -15,6 +15,7 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.compose' version "${kotlinVersion}" apply false
     id 'androidx.room' version "${roomVersion}" apply false
     id "com.vanniktech.maven.publish" version "${mavenPublishVersion}"
+    id 'org.jetbrains.kotlin.jvm' version "${kotlinVersion}" apply false
 }
 
 ext {
@@ -29,6 +30,7 @@ ext {
     roomVersion = '2.6.1'
     kapsuleVersion = '1.2.3'
     coreKtxVersion = "1.13.1"
+    startupVersion = '1.2.0'
 
-    currentVersion = '0.1.1'
+    currentVersion = '0.2.0'
 }

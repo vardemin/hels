@@ -1,7 +1,6 @@
 package com.vardemin.hels.network
 
 import com.vardemin.hels.command.InternalCommand
-import kotlinx.datetime.LocalDateTime
 
 internal sealed interface NetworkLoggerCommand : InternalCommand {
     data class LogRequest(
@@ -11,7 +10,7 @@ internal sealed interface NetworkLoggerCommand : InternalCommand {
         val headers: Map<String, List<String>>,
         val bodySize: Long,
         val bodyString: String?,
-        val time: LocalDateTime
+        val time: Long
     ) : NetworkLoggerCommand
 
     data class LogResponse(
@@ -20,7 +19,7 @@ internal sealed interface NetworkLoggerCommand : InternalCommand {
         val headers: Map<String, List<String>>,
         val bodySize: Long,
         val bodyString: String?,
-        val time: LocalDateTime
+        val time: Long
     ) : NetworkLoggerCommand
 
     data class LogFullRequest(
@@ -30,11 +29,11 @@ internal sealed interface NetworkLoggerCommand : InternalCommand {
         val headers: Map<String, List<String>>,
         val bodySize: Long,
         val bodyString: String?,
-        val time: LocalDateTime,
+        val time: Long,
         val code: Int,
         val responseHeaders: Map<String, List<String>>,
         val responseBodySize: Long,
         val responseBody: String?,
-        val responseTime: LocalDateTime
+        val responseTime: Long
     ) : NetworkLoggerCommand
 }

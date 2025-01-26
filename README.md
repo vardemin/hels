@@ -18,30 +18,58 @@ within local network.
 - Switch Dark/Light mode
 - Copy data rows
 - View request details
+- Multilingual support (en, es, de, jp, ru)
 
 ## Integration
 ### Include Dependency
 HELS is distributed through the maventCentral. There are 2 library versions: hels-full and hels-release.
-Full version encapsulates all the features, but lightweight release is only contains empty implementations.
+Full version encapsulates all the features (except HelsInterceptor), but lightweight release
+contains only empty implementations.
 Useful for debug and release build variants that could be included as follows:
 ```groovy
 dependencies {
     debugImplementation "io.github.vardemin:hels-full:$helsVersion"
     releaseImplementation "io.github.vardemin:hels-release:$helsVersion"
+    implementation "io.github.vardemin:hels-network:$helsVersion" // For OkHttp3 Interceptor
 }
 ```
-### Initialize Library
-HELS Initialization could be invoked in async, suspend or blocking modes.
+### androidx.startup Initialization
+HELS implements androidx.startup Initializer where initial config provides through the inheriting
+HelsConfigurationProvider interface in your Application class.
+```kotlin
+interface HelsConfigurationProvider {
+    fun getHelsConfiguration(): HelsConfiguration
+}
+class HelsConfiguration(
+    val startNewSession: Boolean = true,
+    val port: Int = HELS_DEFAULT_PORT, // 1515
+    val initialProperties: Map<String, String> = emptyMap(),
+    val customFrontendVersion: Int? = null // if custom frontend overridden
+)
+```
+### Manual Initialization
+Manual Initialziation available after disabling HelsStartupInitializer.
+```xml
+<provider
+    android:name="androidx.startup.InitializationProvider"
+    android:authorities="${applicationId}.androidx-startup"
+    android:exported="false"
+    tools:node="merge">
+    <meta-data android:name="com.vardemin.hels.initializer.HelsStartupInitializer"
+              tools:node="remove" />
+</provider>
+```
+HELS Initialization could be invoked manually in async, suspend or blocking modes.
 You could send longs without need to await initialization anyway. init() method accepts context and
 initial session attributes as parameters.
 ```kotlin
 class AndroidApplication: Application() {
     override fun onCreate() {
         super.onCreate()
-        HelsInitializer.initAsync(this, mapOf(
+        HelsInitializer.initAsync(this, HelsConfiguration(initialProperties = mapOf(
             "version" to BuildConfig.VERSION_NAME,
             "version_code" to BuildConfig.VERSION_CODE
-        ))
+        )))
     }
 }
 ```
@@ -86,10 +114,18 @@ Hels.logResponse(
 )
 ```
 **Adding OkHttp Interceptor**
+Just include HelsInterceptor where maxBodySize - max bytes lenght of bodies to log. By default 1024.
+'0' to disable body size filter.
 ```kotlin
 OkHttpClient.Builder()
     // Some other interceptors
-    .addInterceptor(HelsInterceptor())
+    .addInterceptor(
+        HelsInterceptor(
+            Hels, // Hels central object implements HelsNetworkLogger
+            BuildConfig.DEBUG, // enable only in Debug mode
+            maxBodySize // max body size in bytes to capture in body: String fields
+        )
+    )
     .build()
 ```
 
@@ -105,6 +141,30 @@ information about device and session, if all works ok.
 ![Screenshot of events screen](/screenshots/screen3.png)
 ### Requests screen
 ![Screenshot of events screen](/screenshots/screen4.png)
+
+## Frontend override
+1. Place front.zip in raw resources folder
+2. Override customFrontendVersion in HelsConfiguration()
+3. Each frontend update should increment customFrontendVersion parameter
+
+## REST API
+All functionality available through the REST API and websockets (for updates)
+### Sessions API
+GET /api/v1/sessions - get all recorded sessions (SessionItem[])
+GET /api/v1/session - get current session (SessionItem)
+WS /ws/session - subscribe to session changes (SessionItem as json)
+### Logs API
+GET /api/v1/logs - get all recorded logs (LogItem[])
+GET /api/v1/logs/{id} - get log by id (RequestItem)
+WS /ws/logs - subscribe to logs operations (HelsOperation as json)
+### Events API
+GET /api/v1/events - get all recorded events (EventItem[])
+GET /api/v1/events/{id} - get event by id (RequestItem)
+WS /ws/events - subscribe to logs operations (HelsOperation as json)
+### Requests API
+GET /api/v1/requests - get all recorded requests (light RequestItem[] list without bodies)
+GET /api/v1/requests/{id} - get request by id (RequestItem)
+WS /ws/requests - subscribe to logs operations (HelsOperation as json)
 
 ## Example App
 Located in 'app' module.

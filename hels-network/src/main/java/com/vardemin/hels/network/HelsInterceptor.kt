@@ -1,10 +1,5 @@
 package com.vardemin.hels.network
 
-import com.vardemin.hels.Hels
-import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
-import kotlinx.datetime.TimeZone
-import kotlinx.datetime.toLocalDateTime
 import okhttp3.Headers
 import okhttp3.Interceptor
 import okhttp3.MediaType
@@ -16,11 +11,20 @@ import okio.GzipSource
 import java.nio.charset.Charset
 import java.util.TreeMap
 
+/**
+ * Hels implementation on OkHttp3 Interceptor
+ * @param networkLogger Logger instance (Hels object from full or release version)
+ * @param isEnabled whether to process requests (usually false on release)
+ * @param maxBodySize Consider request and response bodies only with the following limit in bytes.
+ */
 class HelsInterceptor(
+    private val networkLogger: HNetworkLogger,
+    private val isEnabled: Boolean,
     private val maxBodySize: Long = HELS_MAX_BODY_DEFAULT_SIZE
 ) : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
+        if (!isEnabled) return chain.proceed(request)
 
         val requestBody = request.body
         val headers = request.headers
@@ -44,12 +48,12 @@ class HelsInterceptor(
                 totalRequestBodySize = requestBody.contentLength()
             }
 
-            if (buffer.isProbablyUtf8() && buffer.size in 1..maxBodySize) {
+            if (buffer.isProbablyUtf8() && checkBodySize(buffer.size)) {
                 val charset: Charset = requestBody.contentType().charsetOrUtf8()
                 bodyString = buffer.readString(charset)
             }
         }
-        val requestId = Hels.logRequest(
+        val requestId = networkLogger.logRequest(
             request.method,
             request.url.toString(),
             headers.toMap(),
@@ -62,7 +66,7 @@ class HelsInterceptor(
         try {
             response = chain.proceed(request)
         } catch (e: Exception) {
-            Hels.logRequestError(requestId, e.message ?: "Unknown error", currentDateTime())
+            networkLogger.logRequestError(requestId, e.message ?: "Unknown error", currentDateTime())
             throw e
         }
         val endTime = currentDateTime()
@@ -86,12 +90,12 @@ class HelsInterceptor(
             }
             totalResponseBodySize = buffer.size
 
-            if (buffer.isProbablyUtf8() && totalResponseBodySize in 1..maxBodySize) {
+            if (buffer.isProbablyUtf8() && checkBodySize(totalResponseBodySize)) {
                 val charset: Charset = responseBody.contentType().charsetOrUtf8()
                 responseString = buffer.clone().readString(charset)
             }
         }
-        Hels.logResponse(
+        networkLogger.logResponse(
             requestId,
             response.code,
             responseHeaders.toMap(),
@@ -137,8 +141,8 @@ class HelsInterceptor(
         }
     }
 
-    private fun currentDateTime(): LocalDateTime {
-        return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+    private fun currentDateTime(): Long {
+        return System.currentTimeMillis()
     }
 
     private fun Headers.toMap(): Map<String, List<String>> {
@@ -157,7 +161,13 @@ class HelsInterceptor(
         return result
     }
 
+    private fun checkBodySize(bodySize: Long) : Boolean {
+        return if (maxBodySize > 0) {
+            bodySize in 1..maxBodySize
+        } else true
+    }
+
     companion object {
-        private const val HELS_MAX_BODY_DEFAULT_SIZE = 1024L
+        const val HELS_MAX_BODY_DEFAULT_SIZE = 1024L
     }
 }

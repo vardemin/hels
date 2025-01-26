@@ -12,7 +12,13 @@ java {
     targetCompatibility = JavaVersion.VERSION_17
 }
 
+dependencies {
+    api project(':hels')
+    implementation platform("com.squareup.okhttp3:okhttp-bom:$okHttpVersion")
+    implementation("com.squareup.okhttp3:okhttp")
+}
+
 mavenPublishing {
     configure(new KotlinJvm(new JavadocJar.Empty(), true))
-    coordinates("io.github.vardemin", "hels-core", rootProject.currentVersion)
+    coordinates("io.github.vardemin", "hels-network", rootProject.currentVersion)
 }
